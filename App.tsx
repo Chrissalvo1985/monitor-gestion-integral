@@ -1,11 +1,10 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { ViewType, Client, TechImplementation, BiClientPanel, ProcessSurvey, Alert, LabEvent, User, TechPlatform, BiPanel, ProcessArea, ClientExperience, CollaboratorExperiencePlan, TechUsability } from './types';
-import { clients as mockClients, techImplementations as mockTechImplementations, biClientPanels as mockBiClientPanels, processSurveys as mockProcessSurveys, alerts as mockAlerts, labEvents as mockLabEvents, users as mockUsers, techPlatforms as mockTechPlatforms, biPanels as mockBiPanels, processAreas as mockProcessAreas, clientExperiences as mockClientExperiences, collaboratorExperiencePlans as mockCollaboratorExperiencePlans, techUsability as mockTechUsability } from './data/mockData';
 import { calculateClientHealthScore } from './utils/calculations';
 import { DataContext } from './context/DataContext';
+import { api } from './lib/api';
 
 import DashboardView from './views/DashboardView';
 import TechMonitorView from './views/TechMonitorView';
@@ -18,38 +17,108 @@ import UsabilityView from './views/UsabilityView';
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewType>('dashboard');
   const [selectedClientId, setSelectedClientId] = useState<string | null>('all');
+  const [loading, setLoading] = useState(true);
   
   // State management for all data
-  const [clients, setClients] = useState<Client[]>(mockClients);
-  const [techPlatforms, setTechPlatforms] = useState<TechPlatform[]>(mockTechPlatforms);
-  const [techImplementations, setTechImplementations] = useState<TechImplementation[]>(mockTechImplementations);
-  const [biPanels, setBiPanels] = useState<BiPanel[]>(mockBiPanels);
-  const [biClientPanels, setBiClientPanels] = useState<BiClientPanel[]>(mockBiClientPanels);
-  const [processSurveys, setProcessSurveys] = useState<ProcessSurvey[]>(mockProcessSurveys);
-  const [labEvents, setLabEvents] = useState<LabEvent[]>(mockLabEvents);
-  const [alerts, setAlerts] = useState<Alert[]>(mockAlerts);
-  const [clientExperiences, setClientExperiences] = useState<ClientExperience[]>(mockClientExperiences);
-  const [collaboratorExperiencePlans, setCollaboratorExperiencePlans] = useState<CollaboratorExperiencePlan[]>(mockCollaboratorExperiencePlans);
-  const [techUsability, setTechUsability] = useState<TechUsability[]>(mockTechUsability);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [techPlatforms, setTechPlatforms] = useState<TechPlatform[]>([]);
+  const [techImplementations, setTechImplementations] = useState<TechImplementation[]>([]);
+  const [biPanels, setBiPanels] = useState<BiPanel[]>([]);
+  const [biClientPanels, setBiClientPanels] = useState<BiClientPanel[]>([]);
+  const [processSurveys, setProcessSurveys] = useState<ProcessSurvey[]>([]);
+  const [labEvents, setLabEvents] = useState<LabEvent[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [clientExperiences, setClientExperiences] = useState<ClientExperience[]>([]);
+  const [collaboratorExperiencePlans, setCollaboratorExperiencePlans] = useState<CollaboratorExperiencePlan[]>([]);
+  const [techUsability, setTechUsability] = useState<TechUsability[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [processAreas, setProcessAreas] = useState<ProcessArea[]>([]);
 
+  // Load data from API
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [
+          usersData,
+          clientsData,
+          techPlatformsData,
+          techImplementationsData,
+          biPanelsData,
+          biClientPanelsData,
+          processAreasData,
+          processSurveysData,
+          labEventsData,
+          alertsData,
+          clientExperiencesData,
+          collaboratorExperiencePlansData,
+          techUsabilityData,
+        ] = await Promise.all([
+          api.getUsers(),
+          api.getClients(),
+          api.getTechPlatforms(),
+          api.getTechImplementations(),
+          api.getBiPanels(),
+          api.getBiClientPanels(),
+          api.getProcessAreas(),
+          api.getProcessSurveys(),
+          api.getLabEvents(),
+          api.getAlerts(),
+          api.getClientExperiences(),
+          api.getCollaboratorExperiencePlans(),
+          api.getTechUsability(),
+        ]);
 
-  // Static data
-  const [users] = useState<User[]>(mockUsers);
-  const [processAreas] = useState<ProcessArea[]>(mockProcessAreas);
+        setUsers(usersData);
+        setClients(clientsData);
+        setTechPlatforms(techPlatformsData);
+        setTechImplementations(techImplementationsData);
+        setBiPanels(biPanelsData);
+        setBiClientPanels(biClientPanelsData);
+        setProcessAreas(processAreasData);
+        setProcessSurveys(processSurveysData);
+        setLabEvents(labEventsData);
+        setAlerts(alertsData);
+        setClientExperiences(clientExperiencesData);
+        setCollaboratorExperiencePlans(collaboratorExperiencePlansData);
+        setTechUsability(techUsabilityData);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    loadData();
+  }, []);
 
   // --- CRUD Functions ---
-  const addClient = (client: Omit<Client, 'id' | 'health_score'>) => {
-    const newClient: Client = { ...client, id: crypto.randomUUID(), health_score: 0 };
-    setClients(prev => [...prev, newClient]);
+  const addClient = async (client: Omit<Client, 'id' | 'health_score'>) => {
+    try {
+      const newClient = await api.createClient(client);
+      setClients(prev => [...prev, newClient]);
+    } catch (error) {
+      console.error('Error creating client:', error);
+      throw error;
+    }
   };
-  const updateClient = (updatedClient: Client) => {
-    setClients(prev => prev.map(c => c.id === updatedClient.id ? updatedClient : c));
+
+  const updateClient = async (updatedClient: Client) => {
+    try {
+      const client = await api.updateClient(updatedClient.id, updatedClient);
+      setClients(prev => prev.map(c => c.id === client.id ? client : c));
+    } catch (error) {
+      console.error('Error updating client:', error);
+      throw error;
+    }
   };
-  const deleteClient = (clientId: string) => {
-      if (!window.confirm('¿Está seguro de que desea eliminar este cliente y toda su información asociada? Esta acción no se puede deshacer.')) {
-        return;
-      }
+
+  const deleteClient = async (clientId: string) => {
+    if (!window.confirm('¿Está seguro de que desea eliminar este cliente y toda su información asociada? Esta acción no se puede deshacer.')) {
+      return;
+    }
+    try {
+      await api.deleteClient(clientId);
       setClients(prev => prev.filter(c => c.id !== clientId));
       setTechImplementations(prev => prev.filter(ti => ti.client_id !== clientId));
       setBiClientPanels(prev => prev.filter(bcp => bcp.client_id !== clientId));
@@ -60,100 +129,202 @@ const App: React.FC = () => {
       setTechUsability(prev => prev.filter(tu => tu.client_id !== clientId));
 
       if (selectedClientId === clientId) {
-          setSelectedClientId('all');
+        setSelectedClientId('all');
       }
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      throw error;
+    }
   };
   
-  const addTechPlatform = (platform: Omit<TechPlatform, 'id'>) => {
-      const newPlatform: TechPlatform = { ...platform, id: crypto.randomUUID() };
+  const addTechPlatform = async (platform: Omit<TechPlatform, 'id'>) => {
+    try {
+      const newPlatform = await api.createTechPlatform(platform);
       setTechPlatforms(prev => [...prev, newPlatform]);
+    } catch (error) {
+      console.error('Error creating tech platform:', error);
+      throw error;
+    }
   };
   
-  const addTechImplementation = (impl: Omit<TechImplementation, 'id' | 'last_update'>) => {
-    const newImpl: TechImplementation = { ...impl, id: crypto.randomUUID(), last_update: new Date().toISOString() };
-    setTechImplementations(prev => [...prev, newImpl]);
+  const addTechImplementation = async (impl: Omit<TechImplementation, 'id' | 'last_update'>) => {
+    try {
+      const newImpl = await api.createTechImplementation(impl);
+      setTechImplementations(prev => [...prev, newImpl]);
+    } catch (error) {
+      console.error('Error creating tech implementation:', error);
+      throw error;
+    }
   };
-  const updateTechImplementation = (updatedImpl: TechImplementation) => {
-    setTechImplementations(prev => prev.map(i => i.id === updatedImpl.id ? { ...updatedImpl, last_update: new Date().toISOString() } : i));
+
+  const updateTechImplementation = async (updatedImpl: TechImplementation) => {
+    try {
+      const impl = await api.updateTechImplementation(updatedImpl.id, updatedImpl);
+      setTechImplementations(prev => prev.map(i => i.id === impl.id ? impl : i));
+    } catch (error) {
+      console.error('Error updating tech implementation:', error);
+      throw error;
+    }
   };
   
-  const addBiPanel = (panel: Omit<BiPanel, 'id'>, clientPanelData: Omit<BiClientPanel, 'id' | 'panel_id' | 'last_update'>) => {
-      const newPanel: BiPanel = { ...panel, id: crypto.randomUUID() };
+  const addBiPanel = async (panel: Omit<BiPanel, 'id'>, clientPanelData: Omit<BiClientPanel, 'id' | 'panel_id' | 'last_update'>) => {
+    try {
+      const newPanel = await api.createBiPanel(panel);
+      const newClientPanel = await api.createBiClientPanel({ ...clientPanelData, panel_id: newPanel.id });
       setBiPanels(prev => [...prev, newPanel]);
-      
-      const newClientPanel: BiClientPanel = { ...clientPanelData, id: crypto.randomUUID(), panel_id: newPanel.id, last_update: new Date().toISOString() };
       setBiClientPanels(prev => [...prev, newClientPanel]);
+    } catch (error) {
+      console.error('Error creating BI panel:', error);
+      throw error;
+    }
   };
 
-  const updateBiPanel = (updatedPanel: BiPanel) => {
-      setBiPanels(prev => prev.map(p => p.id === updatedPanel.id ? updatedPanel : p));
+  const updateBiPanel = async (updatedPanel: BiPanel) => {
+    try {
+      const panel = await api.updateBiPanel(updatedPanel.id, updatedPanel);
+      setBiPanels(prev => prev.map(p => p.id === panel.id ? panel : p));
+    } catch (error) {
+      console.error('Error updating BI panel:', error);
+      throw error;
+    }
   };
 
-  const updateBiClientPanel = (updatedPanel: BiClientPanel) => {
-      setBiClientPanels(prev => prev.map(p => p.id === updatedPanel.id ? { ...updatedPanel, last_update: new Date().toISOString() } : p));
+  const updateBiClientPanel = async (updatedPanel: BiClientPanel) => {
+    try {
+      const panel = await api.updateBiClientPanel(updatedPanel.id, updatedPanel);
+      setBiClientPanels(prev => prev.map(p => p.id === panel.id ? panel : p));
+    } catch (error) {
+      console.error('Error updating BI client panel:', error);
+      throw error;
+    }
   };
 
-  const addProcessSurvey = (survey: Omit<ProcessSurvey, 'id' | 'last_update'>) => {
-      const newSurvey: ProcessSurvey = { ...survey, id: crypto.randomUUID(), last_update: new Date().toISOString() };
+  const addProcessSurvey = async (survey: Omit<ProcessSurvey, 'id' | 'last_update'>) => {
+    try {
+      const newSurvey = await api.createProcessSurvey(survey);
       setProcessSurveys(prev => [...prev, newSurvey]);
-  };
-  const updateProcessSurvey = (updatedSurvey: ProcessSurvey) => {
-      setProcessSurveys(prev => prev.map(s => s.id === updatedSurvey.id ? { ...updatedSurvey, last_update: new Date().toISOString() } : s));
+    } catch (error) {
+      console.error('Error creating process survey:', error);
+      throw error;
+    }
   };
 
-  const addLabEvent = (event: Omit<LabEvent, 'id'>) => {
-      const newEvent: LabEvent = { ...event, id: crypto.randomUUID() };
+  const updateProcessSurvey = async (updatedSurvey: ProcessSurvey) => {
+    try {
+      const survey = await api.updateProcessSurvey(updatedSurvey.id, updatedSurvey);
+      setProcessSurveys(prev => prev.map(s => s.id === survey.id ? survey : s));
+    } catch (error) {
+      console.error('Error updating process survey:', error);
+      throw error;
+    }
+  };
+
+  const addLabEvent = async (event: Omit<LabEvent, 'id'>) => {
+    try {
+      const newEvent = await api.createLabEvent(event);
       setLabEvents(prev => [...prev, newEvent]);
+    } catch (error) {
+      console.error('Error creating lab event:', error);
+      throw error;
+    }
   };
-  const updateLabEvent = (updatedEvent: LabEvent) => {
-      setLabEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
+
+  const updateLabEvent = async (updatedEvent: LabEvent) => {
+    try {
+      const event = await api.updateLabEvent(updatedEvent.id, updatedEvent);
+      setLabEvents(prev => prev.map(e => e.id === event.id ? event : e));
+    } catch (error) {
+      console.error('Error updating lab event:', error);
+      throw error;
+    }
   };
-  const deleteLabEvent = (eventId: string) => {
+
+  const deleteLabEvent = async (eventId: string) => {
+    try {
+      await api.deleteLabEvent(eventId);
       setLabEvents(prev => prev.filter(e => e.id !== eventId));
+    } catch (error) {
+      console.error('Error deleting lab event:', error);
+      throw error;
+    }
   };
   
-  const addClientExperience = (experience: Omit<ClientExperience, 'id'>) => {
-      const newExperience: ClientExperience = { ...experience, id: crypto.randomUUID() };
+  const addClientExperience = async (experience: Omit<ClientExperience, 'id'>) => {
+    try {
+      const newExperience = await api.createClientExperience(experience);
       setClientExperiences(prev => [...prev, newExperience]);
-  };
-  const updateClientExperience = (updatedExperience: ClientExperience) => {
-      setClientExperiences(prev => prev.map(e => e.id === updatedExperience.id ? updatedExperience : e));
+    } catch (error) {
+      console.error('Error creating client experience:', error);
+      throw error;
+    }
   };
 
-  const addCollaboratorExperiencePlan = (plan: Omit<CollaboratorExperiencePlan, 'id' | 'last_update'>) => {
-      const newPlan: CollaboratorExperiencePlan = { ...plan, id: crypto.randomUUID(), last_update: new Date().toISOString() };
+  const updateClientExperience = async (updatedExperience: ClientExperience) => {
+    try {
+      const experience = await api.updateClientExperience(updatedExperience.id, updatedExperience);
+      setClientExperiences(prev => prev.map(e => e.id === experience.id ? experience : e));
+    } catch (error) {
+      console.error('Error updating client experience:', error);
+      throw error;
+    }
+  };
+
+  const addCollaboratorExperiencePlan = async (plan: Omit<CollaboratorExperiencePlan, 'id' | 'last_update'>) => {
+    try {
+      const newPlan = await api.createCollaboratorExperiencePlan(plan);
       setCollaboratorExperiencePlans(prev => [...prev, newPlan]);
-  };
-  const updateCollaboratorExperiencePlan = (updatedPlan: CollaboratorExperiencePlan) => {
-      setCollaboratorExperiencePlans(prev => prev.map(p => p.id === updatedPlan.id ? { ...updatedPlan, last_update: new Date().toISOString() } : p));
-  };
-  const deleteCollaboratorExperiencePlan = (planId: string) => {
-      setCollaboratorExperiencePlans(prev => prev.filter(p => p.id !== planId));
+    } catch (error) {
+      console.error('Error creating collaborator experience plan:', error);
+      throw error;
+    }
   };
 
-  const upsertTechUsability = (clientId: string, platformId: string, usageCount: number, lastUpdate: string) => {
+  const updateCollaboratorExperiencePlan = async (updatedPlan: CollaboratorExperiencePlan) => {
+    try {
+      const plan = await api.updateCollaboratorExperiencePlan(updatedPlan.id, updatedPlan);
+      setCollaboratorExperiencePlans(prev => prev.map(p => p.id === plan.id ? plan : p));
+    } catch (error) {
+      console.error('Error updating collaborator experience plan:', error);
+      throw error;
+    }
+  };
+
+  const deleteCollaboratorExperiencePlan = async (planId: string) => {
+    try {
+      await api.deleteCollaboratorExperiencePlan(planId);
+      setCollaboratorExperiencePlans(prev => prev.filter(p => p.id !== planId));
+    } catch (error) {
+      console.error('Error deleting collaborator experience plan:', error);
+      throw error;
+    }
+  };
+
+  const upsertTechUsability = async (clientId: string, platformId: string, usageCount: number, lastUpdate: string) => {
     const client = clients.find(c => c.id === clientId);
     if (!client) return;
 
     const usagePct = client.headcount > 0 ? Math.round((usageCount / client.headcount) * 100) : 0;
     const finalUsagePct = Math.min(100, usagePct);
 
-    setTechUsability(prev => {
+    try {
+      const usability = await api.upsertTechUsability({
+        client_id: clientId,
+        platform_id: platformId,
+        usage_count: usageCount,
+        usage_pct: finalUsagePct,
+      });
+      setTechUsability(prev => {
         const existing = prev.find(tu => tu.client_id === clientId && tu.platform_id === platformId);
         if (existing) {
-            return prev.map(tu => tu.id === existing.id ? { ...tu, usage_count: usageCount, usage_pct: finalUsagePct, last_update: lastUpdate } : tu);
+          return prev.map(tu => tu.id === existing.id ? usability : tu);
         } else {
-            const newUsability: TechUsability = {
-                id: crypto.randomUUID(),
-                client_id: clientId,
-                platform_id: platformId,
-                usage_count: usageCount,
-                usage_pct: finalUsagePct,
-                last_update: lastUpdate,
-            };
-            return [...prev, newUsability];
+          return [...prev, usability];
         }
-    });
+      });
+    } catch (error) {
+      console.error('Error upserting tech usability:', error);
+      throw error;
+    }
   };
 
   const processedClients = useMemo(() => {
@@ -163,7 +334,7 @@ const App: React.FC = () => {
       
       return {
         ...client,
-        health_score: calculateClientHealthScore(client, clientTechImpls, clientBiPanels, []), // ProcessSurveys no longer client-specific
+        health_score: calculateClientHealthScore(client, clientTechImpls, clientBiPanels, []),
       };
     });
   }, [clients, techImplementations, biClientPanels]);
@@ -218,6 +389,17 @@ const App: React.FC = () => {
       default: return <DashboardView />;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-[#F4F6FA] items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6] mx-auto mb-4"></div>
+          <p className="text-[#1f2937]">Cargando datos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DataContext.Provider value={dataContextValue}>
