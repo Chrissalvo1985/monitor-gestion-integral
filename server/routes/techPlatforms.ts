@@ -32,14 +32,28 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { code, display_name, doc_url } = req.body;
+    
+    // Validar que code y display_name estén presentes
+    if (!code || !display_name) {
+      return res.status(400).json({ error: 'Los campos "code" y "display_name" son requeridos' });
+    }
+    
     const result = await query(
       'INSERT INTO tech_platforms (code, display_name, doc_url) VALUES ($1, $2, $3) RETURNING *',
       [code, display_name, doc_url || null]
     );
     res.status(201).json(result.rows[0]);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating tech platform:', error);
-    res.status(500).json({ error: 'Failed to create tech platform' });
+    
+    // Si es un error de duplicate key (código ya existe)
+    if (error.code === '23505') {
+      return res.status(409).json({ 
+        error: `Ya existe un sistema con el código "${req.body.code}". Por favor usa un código diferente.` 
+      });
+    }
+    
+    res.status(500).json({ error: 'Error al crear el sistema tecnológico' });
   }
 });
 

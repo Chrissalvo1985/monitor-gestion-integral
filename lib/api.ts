@@ -19,7 +19,17 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
   });
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.statusText}`);
+    // Intentar extraer el mensaje de error del servidor
+    let errorMessage = `API Error: ${response.statusText}`;
+    try {
+      const errorData = await response.json();
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      }
+    } catch (e) {
+      // Si no se puede parsear el JSON, usar el statusText
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
