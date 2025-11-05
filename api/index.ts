@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import express, { Request, Response } from 'express';
+import express from 'express';
 import cors from 'cors';
 
 import clientsRouter from '../server/routes/clients.js';
@@ -18,29 +18,44 @@ import techUsabilityRouter from '../server/routes/techUsability.js';
 
 const app = express();
 
-app.use(cors());
+// CORS configuration - allow all origins for now
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Health check
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Monitor de Gestión Integral API is running' });
 });
 
-// API routes
-app.use('/api/clients', clientsRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/tech-platforms', techPlatformsRouter);
-app.use('/api/tech-implementations', techImplementationsRouter);
-app.use('/api/bi-panels', biPanelsRouter);
-app.use('/api/bi-client-panels', biClientPanelsRouter);
-app.use('/api/process-areas', processAreasRouter);
-app.use('/api/process-surveys', processSurveysRouter);
-app.use('/api/lab-events', labEventsRouter);
-app.use('/api/alerts', alertsRouter);
-app.use('/api/client-experiences', clientExperiencesRouter);
-app.use('/api/collaborator-experience-plans', collaboratorExperiencePlansRouter);
-app.use('/api/tech-usability', techUsabilityRouter);
+// API routes - remove /api prefix since Vercel already routes /api/* to this function
+app.use('/clients', clientsRouter);
+app.use('/users', usersRouter);
+app.use('/tech-platforms', techPlatformsRouter);
+app.use('/tech-implementations', techImplementationsRouter);
+app.use('/bi-panels', biPanelsRouter);
+app.use('/bi-client-panels', biClientPanelsRouter);
+app.use('/process-areas', processAreasRouter);
+app.use('/process-surveys', processSurveysRouter);
+app.use('/lab-events', labEventsRouter);
+app.use('/alerts', alertsRouter);
+app.use('/client-experiences', clientExperiencesRouter);
+app.use('/collaborator-experience-plans', collaboratorExperiencePlansRouter);
+app.use('/tech-usability', techUsabilityRouter);
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Handle OPTIONS preflight requests
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return res.status(200).end();
+  }
+
   return app(req as any, res as any);
 }
