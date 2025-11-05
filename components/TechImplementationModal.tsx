@@ -10,7 +10,7 @@ interface TechImplementationModalProps {
 }
 
 export const TechImplementationModal: React.FC<TechImplementationModalProps> = ({ isOpen, onClose, implementation }) => {
-  const { users, techPlatforms, updateTechImplementation } = useData();
+  const { users, techPlatforms, updateTechImplementation, deleteTechImplementation } = useData();
   const [formData, setFormData] = useState<Partial<TechImplementation>>({});
 
   useEffect(() => {
@@ -33,6 +33,17 @@ export const TechImplementationModal: React.FC<TechImplementationModalProps> = (
       updateTechImplementation({ ...implementation, ...formData, last_update: new Date().toISOString() });
     }
     onClose();
+  };
+
+  const handleDelete = async () => {
+    if (implementation) {
+      try {
+        await deleteTechImplementation(implementation.id);
+        onClose();
+      } catch (error) {
+        // El error ya se maneja en deleteTechImplementation
+      }
+    }
   };
   
   const platform = techPlatforms.find(p => p.id === implementation?.platform_id);
@@ -79,9 +90,18 @@ export const TechImplementationModal: React.FC<TechImplementationModalProps> = (
           <textarea name="notes" id="notes" value={formData.notes || ''} onChange={handleChange} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-white text-gray-900" />
         </div>
 
-        <div className="flex justify-end pt-4 space-x-3">
-          <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
-          <button type="submit" className="bg-[#0055B8] text-white px-4 py-2 rounded-md hover:bg-[#003F8C]">Guardar Cambios</button>
+        <div className="flex justify-between pt-4">
+          <button 
+            type="button" 
+            onClick={handleDelete} 
+            className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+          >
+            Eliminar Implementación
+          </button>
+          <div className="space-x-3">
+            <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
+            <button type="submit" className="bg-[#0055B8] text-white px-4 py-2 rounded-md hover:bg-[#003F8C]">Guardar Cambios</button>
+          </div>
         </div>
       </form>
     </Modal>

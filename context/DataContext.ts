@@ -33,6 +33,7 @@ export interface IDataContext {
 
     addTechImplementation: (impl: Omit<TechImplementation, 'id' | 'last_update'>) => void;
     updateTechImplementation: (impl: TechImplementation) => void;
+    deleteTechImplementation: (implId: string) => void;
     
     addBiPanel: (panel: Omit<BiPanel, 'id'>, clientPanelData: Omit<BiClientPanel, 'id' | 'panel_id' | 'last_update'>) => void;
     updateBiPanel: (panel: BiPanel) => void;

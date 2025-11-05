@@ -59,6 +59,7 @@ export const api = {
   getTechImplementation: (id: string) => fetchAPI<any>(`/tech-implementations/${id}`),
   createTechImplementation: (data: any) => fetchAPI<any>('/tech-implementations', { method: 'POST', body: JSON.stringify(data) }),
   updateTechImplementation: (id: string, data: any) => fetchAPI<any>(`/tech-implementations/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteTechImplementation: (id: string) => fetchAPI<any>(`/tech-implementations/${id}`, { method: 'DELETE' }),
 
   // BI Panels
   getBiPanels: () => fetchAPI<any[]>('/bi-panels'),

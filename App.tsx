@@ -188,6 +188,20 @@ const App: React.FC = () => {
       throw error;
     }
   };
+
+  const deleteTechImplementation = async (implId: string) => {
+    if (!window.confirm('¿Está seguro de que desea eliminar esta implementación? Esta acción no se puede deshacer.')) {
+      return;
+    }
+    try {
+      await api.deleteTechImplementation(implId);
+      setTechImplementations(prev => prev.filter(i => i.id !== implId));
+    } catch (error) {
+      console.error('Error deleting tech implementation:', error);
+      alert('Error al eliminar la implementación');
+      throw error;
+    }
+  };
   
   const addBiPanel = async (panel: Omit<BiPanel, 'id'>, clientPanelData: Omit<BiClientPanel, 'id' | 'panel_id' | 'last_update'>) => {
     try {
@@ -384,6 +398,7 @@ const App: React.FC = () => {
     deleteTechPlatform,
     addTechImplementation,
     updateTechImplementation,
+    deleteTechImplementation,
     addBiPanel,
     updateBiPanel,
     updateBiClientPanel,

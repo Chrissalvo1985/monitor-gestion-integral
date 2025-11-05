@@ -72,5 +72,19 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// DELETE tech implementation
+router.delete('/:id', async (req, res) => {
+  try {
+    const result = await query('DELETE FROM tech_implementations WHERE id = $1 RETURNING *', [req.params.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Implementación no encontrada' });
+    }
+    res.json({ message: 'Implementación eliminada correctamente', implementation: result.rows[0] });
+  } catch (error) {
+    console.error('Error deleting tech implementation:', error);
+    res.status(500).json({ error: 'Error al eliminar la implementación' });
+  }
+});
+
 export default router;
 
