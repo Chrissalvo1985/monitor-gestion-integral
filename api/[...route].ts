@@ -18,7 +18,7 @@ import techUsabilityRouter from '../server/routes/techUsability.js';
 
 const app = express();
 
-// CORS configuration - allow all origins for now
+// CORS configuration
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -33,7 +33,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Monitor de Gestión Integral API is running' });
 });
 
-// API routes - remove /api prefix since Vercel already routes /api/* to this function
+// API routes - these paths are relative to /api
 app.use('/clients', clientsRouter);
 app.use('/users', usersRouter);
 app.use('/tech-platforms', techPlatformsRouter);
@@ -59,3 +59,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   return app(req as any, res as any);
 }
+
