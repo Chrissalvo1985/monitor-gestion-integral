@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useData } from '../hooks/useData';
+import { useAuth } from '../hooks/useAuth';
 import { Card } from '../components/Card';
 import { LabEventType, LabEvent } from '../types';
 import { LabEventFormModal } from '../components/LabEventFormModal';
@@ -14,6 +15,7 @@ const EVENT_TYPE_STYLES: Record<LabEventType, { bg: string, text: string }> = {
 
 const PervexLabView: React.FC = () => {
     const { labEvents, clients, users, deleteLabEvent } = useData();
+    const { isAdmin } = useAuth();
     const [isModalOpen, setModalOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<LabEvent | null>(null);
 
