@@ -4,11 +4,13 @@ import { StatusBadge } from '../components/StatusBadge';
 import { ProgressBar } from '../components/ProgressBar';
 import { BiClientPanel, ImplementationStatus, BiPanel } from '../types';
 import { useData } from '../hooks/useData';
+import { useAuth } from '../hooks/useAuth';
 import { BiPanelModal } from '../components/BiPanelModal';
 import { BiPanelCreateModal } from '../components/BiPanelCreateModal';
 
 const BiMonitorView: React.FC = () => {
     const { clients, biPanels, biClientPanels, users, selectedClientId } = useData();
+    const { isAdmin } = useAuth();
     const [editingPanel, setEditingPanel] = useState<{clientPanel: BiClientPanel, panelInfo: BiPanel} | null>(null);
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
@@ -28,9 +30,11 @@ const BiMonitorView: React.FC = () => {
         <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
                 <h1 className="text-3xl font-bold text-gray-800">Gestión de BI</h1>
-                 <button onClick={() => setCreateModalOpen(true)} className="bg-gradient-to-r from-[#FF7E2D] to-orange-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled={!selectedClientId || selectedClientId === 'all'}>
-                    + Crear Panel BI
-                </button>
+                {isAdmin && (
+                    <button onClick={() => setCreateModalOpen(true)} className="bg-gradient-to-r from-[#FF7E2D] to-orange-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled={!selectedClientId || selectedClientId === 'all'}>
+                        + Crear Panel BI
+                    </button>
+                )}
             </div>
             
             {selectedClientId && selectedClientId !== 'all' ? (

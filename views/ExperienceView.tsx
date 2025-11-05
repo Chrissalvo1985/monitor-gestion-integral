@@ -2,13 +2,14 @@
 import React, { useState, useMemo } from 'react';
 import { Card } from '../components/Card';
 import { useData } from '../hooks/useData';
+import { useAuth } from '../hooks/useAuth';
 import { ClientExperience, CollaboratorExperiencePlan, ImplementationStatus } from '../types';
 import { ClientExperienceModal } from '../components/ClientExperienceModal';
 import { CollaboratorExperiencePlanModal } from '../components/CollaboratorExperiencePlanModal';
 import { StatusBadge } from '../components/StatusBadge';
 import { ProgressBar } from '../components/ProgressBar';
 
-const NpsCard: React.FC<{ experience: ClientExperience | undefined; onEdit: () => void }> = ({ experience, onEdit }) => {
+const NpsCard: React.FC<{ experience: ClientExperience | undefined; onEdit: () => void; isAdmin: boolean }> = ({ experience, onEdit, isAdmin }) => {
     const score = experience?.nps_score ?? null;
     let bgColor = 'bg-gray-100';
     let textColor = 'text-gray-800';
@@ -41,12 +42,14 @@ const NpsCard: React.FC<{ experience: ClientExperience | undefined; onEdit: () =
                     <p className={`text-5xl font-bold ${textColor}`}>{score ?? 'N/A'}</p>
                     <p className={`text-sm font-semibold ${textColor}`}>{label}</p>
                 </div>
-                <button onClick={onEdit} className="text-blue-600 hover:text-blue-800" title="Editar NPS">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-                        <path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" />
-                    </svg>
-                </button>
+                {isAdmin && (
+                    <button onClick={onEdit} className="text-blue-600 hover:text-blue-800" title="Editar NPS">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                            <path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" />
+                        </svg>
+                    </button>
+                )}
             </div>
         </Card>
     );
@@ -54,6 +57,7 @@ const NpsCard: React.FC<{ experience: ClientExperience | undefined; onEdit: () =
 
 const ExperienceView: React.FC = () => {
     const { selectedClientId, clients, clientExperiences, collaboratorExperiencePlans, processAreas, users, deleteCollaboratorExperiencePlan } = useData();
+    const { isAdmin } = useAuth();
 
     const [isNpsModalOpen, setNpsModalOpen] = useState(false);
     const [isPlanModalOpen, setPlanModalOpen] = useState(false);
@@ -93,14 +97,16 @@ const ExperienceView: React.FC = () => {
 
             {selectedClientId && selectedClientId !== 'all' ? (
                 <div className="space-y-6">
-                    <NpsCard experience={selectedClientExperience} onEdit={() => setNpsModalOpen(true)} />
+                    <NpsCard experience={selectedClientExperience} onEdit={() => setNpsModalOpen(true)} isAdmin={isAdmin} />
                     
                     <Card>
                          <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold text-gray-700">Planes de Experiencia Colaborador ({selectedClientName})</h2>
-                            <button onClick={handleCreatePlan} className="bg-gradient-to-r from-[#FF7E2D] to-orange-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all">
-                                + Crear Plan
-                            </button>
+                            {isAdmin && (
+                                <button onClick={handleCreatePlan} className="bg-gradient-to-r from-[#FF7E2D] to-orange-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all">
+                                    + Crear Plan
+                                </button>
+                            )}
                         </div>
                         <div className="overflow-x-auto">
                            <table className="w-full text-sm text-left text-gray-500">
@@ -128,14 +134,16 @@ const ExperienceView: React.FC = () => {
                                                 <td className="px-6 py-4">{owner?.name || 'N/A'}</td>
                                                 <td className="px-6 py-4">{plan.target_date ? new Date(plan.target_date).toLocaleDateString() : 'N/A'}</td>
                                                 <td className="px-6 py-4">
-                                                    <div className="flex space-x-2">
-                                                        <button onClick={() => handleEditPlan(plan)} className="text-blue-600 hover:text-blue-800" title="Editar">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg>
-                                                        </button>
-                                                        <button onClick={() => handleDeletePlan(plan.id)} className="text-red-600 hover:text-red-800" title="Eliminar">
-                                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                                                        </button>
-                                                    </div>
+                                                    {isAdmin && (
+                                                        <div className="flex space-x-2">
+                                                            <button onClick={() => handleEditPlan(plan)} className="text-blue-600 hover:text-blue-800" title="Editar">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg>
+                                                            </button>
+                                                            <button onClick={() => handleDeletePlan(plan.id)} className="text-red-600 hover:text-red-800" title="Eliminar">
+                                                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         )

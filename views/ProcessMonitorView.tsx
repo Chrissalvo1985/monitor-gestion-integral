@@ -4,10 +4,12 @@ import { StatusBadge } from '../components/StatusBadge';
 import { ProcessSurveyStatus, ProcessSurvey, ProcessArea } from '../types';
 import { ProgressBar } from '../components/ProgressBar';
 import { useData } from '../hooks/useData';
+import { useAuth } from '../hooks/useAuth';
 import { ProcessSurveyModal } from '../components/ProcessSurveyModal';
 
 const ProcessMonitorView: React.FC = () => {
     const { processAreas, processSurveys, users, addProcessSurvey } = useData();
+    const { isAdmin } = useAuth();
     const [editingSurvey, setEditingSurvey] = useState<ProcessSurvey | null>(null);
 
     const handleCreate = (areaId: string) => {
@@ -69,16 +71,20 @@ const ProcessMonitorView: React.FC = () => {
                                         <p><strong>Owner:</strong> {owner?.name || 'N/A'}</p>
                                         <p><strong>Última Act.:</strong> {new Date(survey.last_update).toLocaleDateString()}</p>
                                     </div>
-                                    <button onClick={() => handleEdit(survey)} className="w-full mt-2 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold">
-                                        Editar Levantamiento
-                                    </button>
+                                    {isAdmin && (
+                                        <button onClick={() => handleEdit(survey)} className="w-full mt-2 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold">
+                                            Editar Levantamiento
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
                                     <p className="mb-4">No se ha iniciado el levantamiento para esta área.</p>
-                                    <button onClick={() => handleCreate(area.id)} className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-semibold">
-                                        Iniciar Levantamiento
-                                    </button>
+                                    {isAdmin && (
+                                        <button onClick={() => handleCreate(area.id)} className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-semibold">
+                                            Iniciar Levantamiento
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </Card>
