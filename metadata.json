@@ -1,0 +1,5 @@
+{
+  "name": "Monitor de Gestión Integral",
+  "description": "Una aplicación de monitoreo que centraliza el seguimiento del modelo de gestión, permite filtrar por cliente/área, visualizar estado y progreso de implementaciones (Tecnología, BI, Procesos), y ofrece una vista ejecutiva para decisiones rápidas.",
+  "requestFramePermissions": []
+}
