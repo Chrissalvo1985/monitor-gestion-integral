@@ -36,9 +36,17 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
 }
 
 export const api = {
+  // Auth
+  login: (email: string, password: string) => fetchAPI<any>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
+  logout: () => fetchAPI<any>('/auth/logout', { method: 'POST' }),
+
   // Users
   getUsers: () => fetchAPI<any[]>('/users'),
   getUser: (id: string) => fetchAPI<any>(`/users/${id}`),
+  createUser: (data: any) => fetchAPI<any>('/users', { method: 'POST', body: JSON.stringify(data) }),
+  updateUser: (id: string, data: any) => fetchAPI<any>(`/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteUser: (id: string) => fetchAPI<any>(`/users/${id}`, { method: 'DELETE' }),
+  changePassword: (id: string, password: string) => fetchAPI<any>(`/users/${id}/password`, { method: 'PUT', body: JSON.stringify({ password }) }),
 
   // Clients
   getClients: () => fetchAPI<any[]>('/clients'),

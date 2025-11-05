@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import express from 'express';
 import cors from 'cors';
 
+import authRouter from '../server/routes/auth.js';
 import clientsRouter from '../server/routes/clients.js';
 import usersRouter from '../server/routes/users.js';
 import techPlatformsRouter from '../server/routes/techPlatforms.js';
@@ -34,6 +35,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes - relative to /api since this function is already at /api
+app.use('/auth', authRouter);
 app.use('/clients', clientsRouter);
 app.use('/users', usersRouter);
 app.use('/tech-platforms', techPlatformsRouter);

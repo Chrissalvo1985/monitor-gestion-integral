@@ -4,6 +4,9 @@ import { Header } from './components/Header';
 import { ViewType, Client, TechImplementation, BiClientPanel, ProcessSurvey, Alert, LabEvent, User, TechPlatform, BiPanel, ProcessArea, ClientExperience, CollaboratorExperiencePlan, TechUsability } from './types';
 import { calculateClientHealthScore } from './utils/calculations';
 import { DataContext } from './context/DataContext';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './hooks/useAuth';
+import { LoginView } from './components/LoginView';
 import { api } from './lib/api';
 
 import DashboardView from './views/DashboardView';
@@ -13,8 +16,10 @@ import ProcessMonitorView from './views/ProcessMonitorView';
 import PervexLabView from './views/PervexLabView';
 import ExperienceView from './views/ExperienceView';
 import UsabilityView from './views/UsabilityView';
+import { UsersManagementView } from './views/UsersManagementView';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { currentUser, loading: authLoading, isAdmin } = useAuth();
   const [activeView, setActiveView] = useState<ViewType>('dashboard');
   const [selectedClientId, setSelectedClientId] = useState<string | null>('all');
   const [loading, setLoading] = useState(true);
@@ -91,6 +96,11 @@ const App: React.FC = () => {
 
     loadData();
   }, []);
+
+  const refreshUsers = async () => {
+    const usersData = await api.getUsers();
+    setUsers(usersData);
+  };
 
   // --- CRUD Functions ---
   const addClient = async (client: Omit<Client, 'id' | 'health_score'>) => {
@@ -391,6 +401,7 @@ const App: React.FC = () => {
     techUsability,
     selectedClientId,
     setSelectedClientId,
+    refreshUsers,
     addClient,
     updateClient,
     deleteClient,
@@ -424,11 +435,17 @@ const App: React.FC = () => {
       case 'lab': return <PervexLabView />;
       case 'experience': return <ExperienceView />;
       case 'usability': return <UsabilityView />;
+      case 'users': return <UsersManagementView />;
       default: return <DashboardView />;
     }
   };
 
-  if (loading) {
+  // Mostrar pantalla de login si no hay usuario autenticado
+  if (!currentUser && !authLoading) {
+    return <LoginView />;
+  }
+
+  if (loading || authLoading) {
     return (
       <div className="flex h-screen bg-[#F4F6FA] items-center justify-center">
         <div className="text-center">
@@ -451,6 +468,14 @@ const App: React.FC = () => {
           </main>
         </div>
     </DataContext.Provider>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 

@@ -22,6 +22,7 @@ export interface IDataContext {
     
     selectedClientId: string | null;
     setSelectedClientId: (id: string | null) => void;
+    refreshUsers: () => Promise<void>;
 
     // CRUD functions
     addClient: (client: Omit<Client, 'id' | 'health_score'>) => void;

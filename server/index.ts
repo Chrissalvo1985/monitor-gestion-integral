@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
+import authRouter from './routes/auth.js';
 import clientsRouter from './routes/clients.js';
 import usersRouter from './routes/users.js';
 import techPlatformsRouter from './routes/techPlatforms.js';
@@ -30,6 +31,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
+app.use('/api/auth', authRouter);
 app.use('/api/clients', clientsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/tech-platforms', techPlatformsRouter);

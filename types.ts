@@ -67,6 +67,17 @@ export enum AlertSeverity {
 export interface User {
   id: string;
   name: string;
+  email: string;
+  role: 'admin' | 'user';
+  active: boolean;
+  created_at?: string;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'user';
 }
 
 export interface Client {
@@ -200,4 +211,4 @@ export interface TechUsability {
   last_update: string;
 }
 
-export type ViewType = 'dashboard' | 'tech' | 'bi' | 'process' | 'lab' | 'experience' | 'usability';
+export type ViewType = 'dashboard' | 'tech' | 'bi' | 'process' | 'lab' | 'experience' | 'usability' | 'users';

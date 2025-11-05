@@ -73,4 +73,5 @@ export const VIEWS: { id: ViewType; name: string; icon: React.ReactNode }[] = [
         React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M6.087 14.25c-.355 0-.676.186-.959.401-.283.215-.52.49-.719.793a4.5 4.5 0 006.088 6.088c.303-.2.578-.436.793-.72a.99.99 0 00.401-.958v-3.232c0-.355-.186-.676-.401-.959a.995.995 0 00-.959-.401h-3.232z" }),
         React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 7.5l.006-.006M9 12l.006-.006M9 16.5l.006-.006M12 9l.006-.006M12 13.5l.006-.006M12 18l.006-.006M16.5 9l.006-.006M16.5 13.5l.006-.006M16.5 18l.006-.006" })) 
     },
+    { id: 'users', name: 'Gestión Usuarios', icon: React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" }) },
 ];

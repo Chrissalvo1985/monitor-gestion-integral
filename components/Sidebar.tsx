@@ -1,6 +1,7 @@
 import React from 'react';
 import { ViewType } from '../types';
 import { VIEWS } from '../constants';
+import { useAuth } from '../hooks/useAuth';
 
 interface SidebarProps {
   activeView: ViewType;
@@ -25,6 +26,16 @@ const Logo = () => (
   
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
+  const { currentUser, isAdmin, logout } = useAuth();
+
+  const visibleViews = VIEWS.filter(view => {
+    // Mostrar 'users' solo a administradores
+    if (view.id === 'users') {
+      return isAdmin;
+    }
+    return true;
+  });
+
   return (
     <aside className="w-64 bg-white p-4 space-y-4 flex flex-col border-r border-gray-200">
       <div className="flex items-center space-x-3 p-2 mb-4">
@@ -33,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) =
       </div>
       <nav className="flex-grow">
         <ul className="space-y-2">
-          {VIEWS.map(({ id, name, icon }) => (
+          {visibleViews.map(({ id, name, icon }) => (
             <li key={id}>
               <button
                 onClick={() => setActiveView(id)}
@@ -52,14 +63,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) =
           ))}
         </ul>
       </nav>
-      <div className="p-2 border-t border-gray-200">
-         <div className="flex items-center space-x-3 mt-2">
-            <img className="h-10 w-10 rounded-full" src="https://i.pravatar.cc/100?u=admin" alt="User" />
-            <div>
-                <p className="font-semibold text-gray-800">Admin</p>
-                <p className="text-sm text-gray-500">admin@pervex.com</p>
+      <div className="p-2 border-t border-gray-200 space-y-2">
+         <div className="flex items-center space-x-3">
+            <img className="h-10 w-10 rounded-full bg-[#0055B8] flex items-center justify-center text-white font-bold" src={`https://ui-avatars.com/api/?name=${currentUser?.name}&background=0055B8&color=fff`} alt="User" />
+            <div className="flex-1">
+                <p className="font-semibold text-gray-800">{currentUser?.name}</p>
+                <p className="text-xs text-gray-500">{isAdmin ? 'Administrador' : 'Usuario'}</p>
             </div>
          </div>
+         <button
+            onClick={logout}
+            className="w-full flex items-center justify-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors text-sm font-semibold"
+         >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Cerrar Sesión</span>
+         </button>
       </div>
     </aside>
   );
