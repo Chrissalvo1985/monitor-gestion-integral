@@ -4,6 +4,7 @@ import { Card } from '../components/Card';
 import { ImplementationStatus, Client } from '../types';
 import { calculateTechProgress, calculateBiProgress, calculateProcessProgress } from '../utils/calculations';
 import { useData } from '../hooks/useData';
+import { useAuth } from '../hooks/useAuth';
 import { ClientFormModal } from '../components/ClientFormModal';
 
 const StatusIcon = ({ status }: { status?: ImplementationStatus }) => {
@@ -27,6 +28,7 @@ const StatusIcon = ({ status }: { status?: ImplementationStatus }) => {
 
 const DashboardView: React.FC = () => {
     const { clients, techPlatforms, techImplementations, biClientPanels, processSurveys, selectedClientId, deleteClient, users } = useData();
+    const { isAdmin } = useAuth();
     const [isClientModalOpen, setClientModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState<Client | null>(null);
 
@@ -70,9 +72,11 @@ const DashboardView: React.FC = () => {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-gray-800">Dashboard General</h1>
-                <button onClick={handleOpenCreateModal} className="bg-gradient-to-r from-[#FF7E2D] to-orange-500 hover:from-orange-500 hover:to-[#FF7E2D] text-white font-bold py-2 px-5 rounded-lg shadow-md transition-all">
-                    + Crear Cliente
-                </button>
+                {isAdmin && (
+                    <button onClick={handleOpenCreateModal} className="bg-gradient-to-r from-[#FF7E2D] to-orange-500 hover:from-orange-500 hover:to-[#FF7E2D] text-white font-bold py-2 px-5 rounded-lg shadow-md transition-all">
+                        + Crear Cliente
+                    </button>
+                )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
@@ -96,7 +100,7 @@ const DashboardView: React.FC = () => {
                                 {techPlatforms.map(platform => (
                                     <th key={platform.id} scope="col" className="px-6 py-3 text-center">{platform.display_name}</th>
                                 ))}
-                                <th scope="col" className="px-6 py-3 text-center">Acción</th>
+                                {isAdmin && <th scope="col" className="px-6 py-3 text-center">Acción</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -123,16 +127,18 @@ const DashboardView: React.FC = () => {
                                             </td>
                                         );
                                     })}
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center justify-center space-x-3">
-                                            <button onClick={() => handleOpenEditModal(client)} className="text-blue-600 hover:text-blue-800" title="Editar">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg>
-                                            </button>
-                                            <button onClick={() => deleteClient(client.id)} className="text-red-600 hover:text-red-800" title="Eliminar">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                                            </button>
-                                        </div>
-                                    </td>
+                                    {isAdmin && (
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-center space-x-3">
+                                                <button onClick={() => handleOpenEditModal(client)} className="text-blue-600 hover:text-blue-800" title="Editar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg>
+                                                </button>
+                                                <button onClick={() => deleteClient(client.id)} className="text-red-600 hover:text-red-800" title="Eliminar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    )}
                                 </tr>
                             )})}
                         </tbody>

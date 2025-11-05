@@ -5,11 +5,13 @@ import { ProgressBar } from '../components/ProgressBar';
 import { RISK_COLORS } from '../constants';
 import { TechImplementation, ImplementationStatus, RiskLevel, TechPlatform } from '../types';
 import { useData } from '../hooks/useData';
+import { useAuth } from '../hooks/useAuth';
 import { TechImplementationModal } from '../components/TechImplementationModal';
 import { TechPlatformFormModal } from '../components/TechPlatformFormModal';
 
 const TechMonitorView: React.FC = () => {
     const { clients, techPlatforms, techImplementations, users, addTechImplementation, deleteTechPlatform, selectedClientId } = useData();
+    const { isAdmin } = useAuth();
     const [editingImpl, setEditingImpl] = useState<TechImplementation | null>(null);
     const [isPlatformModalOpen, setPlatformModalOpen] = useState(false);
 
@@ -53,9 +55,11 @@ const TechMonitorView: React.FC = () => {
         <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
                 <h1 className="text-3xl font-bold text-gray-800">Gestión de Tecnología</h1>
-                <button onClick={() => setPlatformModalOpen(true)} className="bg-gradient-to-r from-[#FF7E2D] to-orange-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all">
-                    + Añadir Nuevo Sistema
-                </button>
+                {isAdmin && (
+                    <button onClick={() => setPlatformModalOpen(true)} className="bg-gradient-to-r from-[#FF7E2D] to-orange-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all">
+                        + Añadir Nuevo Sistema
+                    </button>
+                )}
             </div>
 
             {selectedClientId && selectedClientId !== 'all' ? (
@@ -67,16 +71,18 @@ const TechMonitorView: React.FC = () => {
 
                         return (
                             <Card key={platform.id} className="flex flex-col relative">
-                                <button
-                                    onClick={() => handleDeletePlatform(platform.id, platform.display_name)}
-                                    className="absolute top-2 right-2 text-gray-400 hover:text-red-600 transition-colors"
-                                    title="Eliminar sistema"
-                                    aria-label="Eliminar sistema"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                                    </svg>
-                                </button>
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => handleDeletePlatform(platform.id, platform.display_name)}
+                                        className="absolute top-2 right-2 text-gray-400 hover:text-red-600 transition-colors"
+                                        title="Eliminar sistema"
+                                        aria-label="Eliminar sistema"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                )}
                                 <div className="flex justify-between items-start pr-8">
                                     <h3 className="text-lg font-bold text-gray-800">{platform.display_name}</h3>
                                     {impl ? <StatusBadge status={impl.status} /> : <StatusBadge status={ImplementationStatus.NO_INICIADO} />}
@@ -107,17 +113,19 @@ const TechMonitorView: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
-                                <div className="mt-4 pt-4 border-t border-gray-200">
-                                    {impl ? (
-                                        <button onClick={() => handleEdit(impl)} className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold">
-                                            Editar
-                                        </button>
-                                    ) : (
-                                        <button onClick={() => handlePlan(platform.id)} className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-semibold">
-                                            Planificar
-                                        </button>
-                                    )}
-                                </div>
+                                {isAdmin && (
+                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                        {impl ? (
+                                            <button onClick={() => handleEdit(impl)} className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold">
+                                                Editar
+                                            </button>
+                                        ) : (
+                                            <button onClick={() => handlePlan(platform.id)} className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-semibold">
+                                                Planificar
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </Card>
                         );
                     })}
