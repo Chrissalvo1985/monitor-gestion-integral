@@ -51,6 +51,7 @@ export const api = {
   getTechPlatforms: () => fetchAPI<any[]>('/tech-platforms'),
   getTechPlatform: (id: string) => fetchAPI<any>(`/tech-platforms/${id}`),
   createTechPlatform: (data: any) => fetchAPI<any>('/tech-platforms', { method: 'POST', body: JSON.stringify(data) }),
+  deleteTechPlatform: (id: string) => fetchAPI<any>(`/tech-platforms/${id}`, { method: 'DELETE' }),
 
   // Tech Implementations
   getTechImplementations: () => fetchAPI<any[]>('/tech-implementations'),

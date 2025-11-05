@@ -97,6 +97,9 @@ const App: React.FC = () => {
     try {
       const newClient = await api.createClient(client);
       setClients(prev => [...prev, newClient]);
+      // Recargar usuarios por si se creó uno nuevo
+      const updatedUsers = await api.getUsers();
+      setUsers(updatedUsers);
     } catch (error) {
       console.error('Error creating client:', error);
       throw error;
@@ -107,6 +110,9 @@ const App: React.FC = () => {
     try {
       const client = await api.updateClient(updatedClient.id, updatedClient);
       setClients(prev => prev.map(c => c.id === client.id ? client : c));
+      // Recargar usuarios por si se creó uno nuevo
+      const updatedUsers = await api.getUsers();
+      setUsers(updatedUsers);
     } catch (error) {
       console.error('Error updating client:', error);
       throw error;
@@ -143,6 +149,22 @@ const App: React.FC = () => {
       setTechPlatforms(prev => [...prev, newPlatform]);
     } catch (error) {
       console.error('Error creating tech platform:', error);
+      throw error;
+    }
+  };
+
+  const deleteTechPlatform = async (platformId: string) => {
+    if (!window.confirm('¿Está seguro de que desea eliminar este sistema tecnológico? Esta acción no se puede deshacer.')) {
+      return;
+    }
+    try {
+      await api.deleteTechPlatform(platformId);
+      setTechPlatforms(prev => prev.filter(p => p.id !== platformId));
+      setTechImplementations(prev => prev.filter(ti => ti.platform_id !== platformId));
+      setTechUsability(prev => prev.filter(tu => tu.platform_id !== platformId));
+    } catch (error: any) {
+      console.error('Error deleting tech platform:', error);
+      alert(error.message || 'Error al eliminar el sistema tecnológico');
       throw error;
     }
   };
@@ -359,6 +381,7 @@ const App: React.FC = () => {
     updateClient,
     deleteClient,
     addTechPlatform,
+    deleteTechPlatform,
     addTechImplementation,
     updateTechImplementation,
     addBiPanel,

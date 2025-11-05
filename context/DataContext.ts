@@ -29,6 +29,7 @@ export interface IDataContext {
     deleteClient: (clientId: string) => void;
     
     addTechPlatform: (platform: Omit<TechPlatform, 'id'>) => void;
+    deleteTechPlatform: (platformId: string) => void;
 
     addTechImplementation: (impl: Omit<TechImplementation, 'id' | 'last_update'>) => void;
     updateTechImplementation: (impl: TechImplementation) => void;

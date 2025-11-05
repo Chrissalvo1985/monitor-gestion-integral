@@ -31,10 +31,35 @@ router.get('/:id', async (req, res) => {
 // POST create client
 router.post('/', async (req, res) => {
   try {
-    const { name, gerencia, owner_user_id, headcount, notes } = req.body;
+    const { name, gerencia, owner_user_id, owner_name, headcount, notes } = req.body;
+    
+    let finalOwnerId = owner_user_id;
+    
+    // Si se proporciona owner_name, buscar o crear el usuario
+    if (owner_name && owner_name.trim()) {
+      const trimmedName = owner_name.trim();
+      
+      // Buscar si el usuario ya existe
+      const existingUser = await query(
+        'SELECT * FROM users WHERE LOWER(name) = LOWER($1)',
+        [trimmedName]
+      );
+      
+      if (existingUser.rows.length > 0) {
+        finalOwnerId = existingUser.rows[0].id;
+      } else {
+        // Crear nuevo usuario
+        const newUser = await query(
+          'INSERT INTO users (name) VALUES ($1) RETURNING *',
+          [trimmedName]
+        );
+        finalOwnerId = newUser.rows[0].id;
+      }
+    }
+    
     const result = await query(
       'INSERT INTO clients (name, gerencia, owner_user_id, headcount, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [name, gerencia, owner_user_id, headcount || 0, notes || null]
+      [name, gerencia, finalOwnerId, headcount || 0, notes || null]
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -46,10 +71,35 @@ router.post('/', async (req, res) => {
 // PUT update client
 router.put('/:id', async (req, res) => {
   try {
-    const { name, gerencia, owner_user_id, health_score, headcount, notes } = req.body;
+    const { name, gerencia, owner_user_id, owner_name, health_score, headcount, notes } = req.body;
+    
+    let finalOwnerId = owner_user_id;
+    
+    // Si se proporciona owner_name, buscar o crear el usuario
+    if (owner_name && owner_name.trim()) {
+      const trimmedName = owner_name.trim();
+      
+      // Buscar si el usuario ya existe
+      const existingUser = await query(
+        'SELECT * FROM users WHERE LOWER(name) = LOWER($1)',
+        [trimmedName]
+      );
+      
+      if (existingUser.rows.length > 0) {
+        finalOwnerId = existingUser.rows[0].id;
+      } else {
+        // Crear nuevo usuario
+        const newUser = await query(
+          'INSERT INTO users (name) VALUES ($1) RETURNING *',
+          [trimmedName]
+        );
+        finalOwnerId = newUser.rows[0].id;
+      }
+    }
+    
     const result = await query(
       'UPDATE clients SET name = $1, gerencia = $2, owner_user_id = $3, health_score = $4, headcount = $5, notes = $6, updated_at = NOW() WHERE id = $7 RETURNING *',
-      [name, gerencia, owner_user_id, health_score, headcount, notes || null, req.params.id]
+      [name, gerencia, finalOwnerId, health_score, headcount, notes || null, req.params.id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Client not found' });

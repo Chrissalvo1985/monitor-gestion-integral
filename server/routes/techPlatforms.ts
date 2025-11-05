@@ -57,5 +57,48 @@ router.post('/', async (req, res) => {
   }
 });
 
+// DELETE tech platform
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Verificar si hay implementaciones que usan este sistema
+    const implementationsCheck = await query(
+      'SELECT COUNT(*) as count FROM tech_implementations WHERE platform_id = $1',
+      [id]
+    );
+    
+    if (parseInt(implementationsCheck.rows[0].count) > 0) {
+      return res.status(409).json({ 
+        error: 'No se puede eliminar este sistema porque tiene implementaciones asociadas. Elimina primero las implementaciones.' 
+      });
+    }
+    
+    // Verificar si hay registros de usabilidad
+    const usabilityCheck = await query(
+      'SELECT COUNT(*) as count FROM tech_usability WHERE platform_id = $1',
+      [id]
+    );
+    
+    if (parseInt(usabilityCheck.rows[0].count) > 0) {
+      return res.status(409).json({ 
+        error: 'No se puede eliminar este sistema porque tiene registros de usabilidad asociados.' 
+      });
+    }
+    
+    // Eliminar el sistema
+    const result = await query('DELETE FROM tech_platforms WHERE id = $1 RETURNING *', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Sistema tecnológico no encontrado' });
+    }
+    
+    res.json({ message: 'Sistema tecnológico eliminado correctamente', platform: result.rows[0] });
+  } catch (error: any) {
+    console.error('Error deleting tech platform:', error);
+    res.status(500).json({ error: 'Error al eliminar el sistema tecnológico' });
+  }
+});
+
 export default router;
 

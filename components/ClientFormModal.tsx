@@ -14,23 +14,25 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({ isOpen, onClos
   const [formData, setFormData] = useState({
     name: '',
     gerencia: Gerencia.Rbravo,
-    owner_user_id: '',
+    owner_name: '',
     headcount: 0,
   });
 
   useEffect(() => {
     if (client) {
+      // Buscar el nombre del usuario actual
+      const ownerUser = users.find(u => u.id === client.owner_user_id);
       setFormData({
         name: client.name,
         gerencia: client.gerencia,
-        owner_user_id: client.owner_user_id,
+        owner_name: ownerUser?.name || '',
         headcount: client.headcount,
       });
     } else {
       setFormData({
         name: '',
         gerencia: Gerencia.Rbravo,
-        owner_user_id: users[0]?.id || '',
+        owner_name: '',
         headcount: 0,
       });
     }
@@ -41,14 +43,28 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({ isOpen, onClos
     setFormData(prev => ({ ...prev, [name]: name === 'headcount' ? parseInt(value, 10) || 0 : value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (client) {
-      updateClient({ ...client, ...formData });
-    } else {
-      addClient(formData);
+    
+    // Preparar datos para enviar
+    const clientData = {
+      name: formData.name,
+      gerencia: formData.gerencia,
+      owner_name: formData.owner_name.trim(),
+      headcount: formData.headcount,
+    };
+    
+    try {
+      if (client) {
+        await updateClient({ ...client, ...clientData });
+      } else {
+        await addClient(clientData);
+      }
+      onClose();
+    } catch (error) {
+      console.error('Error saving client:', error);
+      alert('Error al guardar el cliente. Por favor intenta nuevamente.');
     }
-    onClose();
   };
 
   return (
@@ -69,10 +85,20 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({ isOpen, onClos
           </select>
         </div>
         <div>
-          <label htmlFor="owner_user_id" className="block text-sm font-medium text-gray-700">Responsable</label>
-          <select name="owner_user_id" id="owner_user_id" value={formData.owner_user_id} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white text-gray-900">
-            {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-          </select>
+          <label htmlFor="owner_name" className="block text-sm font-medium text-gray-700">Responsable</label>
+          <input 
+            type="text" 
+            name="owner_name" 
+            id="owner_name" 
+            value={formData.owner_name} 
+            onChange={handleChange} 
+            required 
+            placeholder="Nombre del responsable"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white text-gray-900" 
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Escribe el nombre del responsable. Si no existe, se creará automáticamente.
+          </p>
         </div>
         <div className="flex justify-end pt-4 space-x-3">
           <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
