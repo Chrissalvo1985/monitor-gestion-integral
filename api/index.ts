@@ -29,24 +29,24 @@ app.use(cors({
 app.use(express.json());
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Monitor de Gestión Integral API is running' });
 });
 
-// API routes - these paths are relative to /api
-app.use('/clients', clientsRouter);
-app.use('/users', usersRouter);
-app.use('/tech-platforms', techPlatformsRouter);
-app.use('/tech-implementations', techImplementationsRouter);
-app.use('/bi-panels', biPanelsRouter);
-app.use('/bi-client-panels', biClientPanelsRouter);
-app.use('/process-areas', processAreasRouter);
-app.use('/process-surveys', processSurveysRouter);
-app.use('/lab-events', labEventsRouter);
-app.use('/alerts', alertsRouter);
-app.use('/client-experiences', clientExperiencesRouter);
-app.use('/collaborator-experience-plans', collaboratorExperiencePlansRouter);
-app.use('/tech-usability', techUsabilityRouter);
+// API routes - note the /api prefix is included
+app.use('/api/clients', clientsRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/tech-platforms', techPlatformsRouter);
+app.use('/api/tech-implementations', techImplementationsRouter);
+app.use('/api/bi-panels', biPanelsRouter);
+app.use('/api/bi-client-panels', biClientPanelsRouter);
+app.use('/api/process-areas', processAreasRouter);
+app.use('/api/process-surveys', processSurveysRouter);
+app.use('/api/lab-events', labEventsRouter);
+app.use('/api/alerts', alertsRouter);
+app.use('/api/client-experiences', clientExperiencesRouter);
+app.use('/api/collaborator-experience-plans', collaboratorExperiencePlansRouter);
+app.use('/api/tech-usability', techUsabilityRouter);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Set CORS headers for all responses
@@ -63,3 +63,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   return app(req as any, res as any);
 }
+
