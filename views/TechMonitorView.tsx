@@ -28,11 +28,18 @@ const TechMonitorView: React.FC = () => {
         return filterClients(clients, selectedClientId, selectedResponsibleId, selectedGerencia);
     }, [clients, selectedClientId, selectedResponsibleId, selectedGerencia]);
 
+    // Verificar si todos los filtros están en "all"
+    const allFiltersAreAll = useMemo(() => {
+        return (selectedClientId === 'all' || !selectedClientId) && 
+               (selectedResponsibleId === 'all' || !selectedResponsibleId) && 
+               (selectedGerencia === 'all' || !selectedGerencia);
+    }, [selectedClientId, selectedResponsibleId, selectedGerencia]);
+
     const clientImplementations = useMemo(() => {
-        if (filteredClients.length === 0) return [];
+        if (filteredClients.length === 0 || allFiltersAreAll) return [];
         const filteredClientIds = new Set(filteredClients.map(c => c.id));
         return techImplementations.filter(impl => filteredClientIds.has(impl.client_id));
-    }, [techImplementations, filteredClients]);
+    }, [techImplementations, filteredClients, allFiltersAreAll]);
     
     const getImplementationForPlatform = (platformId: string): TechImplementation | undefined => {
         return clientImplementations.find(impl => impl.platform_id === platformId);
@@ -68,7 +75,7 @@ const TechMonitorView: React.FC = () => {
                 )}
             </div>
 
-            {filteredClients.length > 0 ? (
+            {filteredClients.length > 0 && !allFiltersAreAll ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {techPlatforms.map(platform => {
                         const impl = getImplementationForPlatform(platform.id);

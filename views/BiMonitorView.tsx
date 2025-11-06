@@ -25,12 +25,19 @@ const BiMonitorView: React.FC = () => {
     const filteredClients = useMemo(() => {
         return filterClients(clients, selectedClientId, selectedResponsibleId, selectedGerencia);
     }, [clients, selectedClientId, selectedResponsibleId, selectedGerencia]);
+
+    // Verificar si todos los filtros están en "all"
+    const allFiltersAreAll = useMemo(() => {
+        return (selectedClientId === 'all' || !selectedClientId) && 
+               (selectedResponsibleId === 'all' || !selectedResponsibleId) && 
+               (selectedGerencia === 'all' || !selectedGerencia);
+    }, [selectedClientId, selectedResponsibleId, selectedGerencia]);
     
     const clientPanels = useMemo(() => {
-        if (filteredClients.length === 0) return [];
+        if (filteredClients.length === 0 || allFiltersAreAll) return [];
         const filteredClientIds = new Set(filteredClients.map(c => c.id));
         return biClientPanels.filter(p => filteredClientIds.has(p.client_id));
-    }, [biClientPanels, filteredClients]);
+    }, [biClientPanels, filteredClients, allFiltersAreAll]);
 
     return (
         <div className="space-y-6">
@@ -43,7 +50,7 @@ const BiMonitorView: React.FC = () => {
                 )}
             </div>
             
-            {filteredClients.length > 0 ? (
+            {filteredClients.length > 0 && !allFiltersAreAll ? (
                 <div>
                     <h2 className="text-xl font-bold mb-4 text-gray-700">
                         {filteredClients.length === 1 
