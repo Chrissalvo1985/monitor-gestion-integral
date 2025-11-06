@@ -8,9 +8,10 @@ import { useData } from '../hooks/useData';
 import { useAuth } from '../hooks/useAuth';
 import { TechImplementationModal } from '../components/TechImplementationModal';
 import { TechPlatformFormModal } from '../components/TechPlatformFormModal';
+import { filterClients } from '../utils/calculations';
 
 const TechMonitorView: React.FC = () => {
-    const { clients, techPlatforms, techImplementations, users, addTechImplementation, deleteTechPlatform, selectedClientId } = useData();
+    const { clients, techPlatforms, techImplementations, users, addTechImplementation, deleteTechPlatform, selectedClientId, selectedResponsibleId, selectedGerencia } = useData();
     const { isAdmin } = useAuth();
     const [editingImpl, setEditingImpl] = useState<TechImplementation | null>(null);
     const [isPlatformModalOpen, setPlatformModalOpen] = useState(false);
@@ -23,19 +24,24 @@ const TechMonitorView: React.FC = () => {
         }
     };
 
+    const filteredClients = useMemo(() => {
+        return filterClients(clients, selectedClientId, selectedResponsibleId, selectedGerencia);
+    }, [clients, selectedClientId, selectedResponsibleId, selectedGerencia]);
+
     const clientImplementations = useMemo(() => {
-        if (!selectedClientId || selectedClientId === 'all') return [];
-        return techImplementations.filter(impl => impl.client_id === selectedClientId);
-    }, [techImplementations, selectedClientId]);
+        if (filteredClients.length === 0) return [];
+        const filteredClientIds = new Set(filteredClients.map(c => c.id));
+        return techImplementations.filter(impl => filteredClientIds.has(impl.client_id));
+    }, [techImplementations, filteredClients]);
     
     const getImplementationForPlatform = (platformId: string): TechImplementation | undefined => {
         return clientImplementations.find(impl => impl.platform_id === platformId);
     };
     
     const handlePlan = (platformId: string) => {
-        if (!selectedClientId || selectedClientId === 'all') return;
+        if (filteredClients.length !== 1) return;
         const newImpl = {
-            client_id: selectedClientId,
+            client_id: filteredClients[0].id,
             platform_id: platformId,
             status: ImplementationStatus.PLANIFICADO,
             progress_pct: 0,
@@ -49,7 +55,7 @@ const TechMonitorView: React.FC = () => {
         setEditingImpl(impl);
     };
 
-    const selectedClient = clients.find(c => c.id === selectedClientId);
+    const selectedClient = filteredClients.length === 1 ? filteredClients[0] : null;
 
     return (
         <div className="space-y-6">
@@ -62,7 +68,7 @@ const TechMonitorView: React.FC = () => {
                 )}
             </div>
 
-            {selectedClientId && selectedClientId !== 'all' ? (
+            {filteredClients.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {techPlatforms.map(platform => {
                         const impl = getImplementationForPlatform(platform.id);
@@ -109,7 +115,7 @@ const TechMonitorView: React.FC = () => {
                                         </>
                                     ) : (
                                         <div className="flex-grow flex items-center justify-center text-gray-500">
-                                            <p>No iniciado para {selectedClient?.name}.</p>
+                                            <p>No iniciado{filteredClients.length === 1 ? ` para ${filteredClients[0].name}` : ''}.</p>
                                         </div>
                                     )}
                                 </div>
@@ -120,7 +126,11 @@ const TechMonitorView: React.FC = () => {
                                                 Editar
                                             </button>
                                         ) : (
-                                            <button onClick={() => handlePlan(platform.id)} className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-semibold">
+                                            <button 
+                                                onClick={() => handlePlan(platform.id)} 
+                                                disabled={filteredClients.length !== 1}
+                                                className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
                                                 Planificar
                                             </button>
                                         )}
@@ -132,7 +142,7 @@ const TechMonitorView: React.FC = () => {
                 </div>
             ) : (
                 <Card>
-                    <p className="text-center text-gray-500 py-8">Por favor, seleccione un cliente en la barra superior para gestionar sus implementaciones tecnológicas.</p>
+                    <p className="text-center text-gray-500 py-8">Por favor, seleccione filtros en la barra superior para gestionar implementaciones tecnológicas.</p>
                 </Card>
             )}
             <TechImplementationModal isOpen={!!editingImpl} implementation={editingImpl} onClose={() => setEditingImpl(null)} />

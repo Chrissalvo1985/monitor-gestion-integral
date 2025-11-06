@@ -22,6 +22,8 @@ const AppContent: React.FC = () => {
   const { currentUser, loading: authLoading, isAdmin } = useAuth();
   const [activeView, setActiveView] = useState<ViewType>('dashboard');
   const [selectedClientId, setSelectedClientId] = useState<string | null>('all');
+  const [selectedResponsibleId, setSelectedResponsibleId] = useState<string | null>('all');
+  const [selectedGerencia, setSelectedGerencia] = useState<string | null>('all');
   const [loading, setLoading] = useState(true);
   
   // State management for all data
@@ -401,6 +403,10 @@ const AppContent: React.FC = () => {
     techUsability,
     selectedClientId,
     setSelectedClientId,
+    selectedResponsibleId,
+    setSelectedResponsibleId,
+    selectedGerencia,
+    setSelectedGerencia,
     refreshUsers,
     addClient,
     updateClient,

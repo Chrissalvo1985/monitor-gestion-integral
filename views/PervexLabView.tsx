@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useData } from '../hooks/useData';
 import { useAuth } from '../hooks/useAuth';
 import { Card } from '../components/Card';
 import { LabEventType, LabEvent } from '../types';
 import { LabEventFormModal } from '../components/LabEventFormModal';
+import { filterClients } from '../utils/calculations';
 
 const EVENT_TYPE_STYLES: Record<LabEventType, { bg: string, text: string }> = {
     [LabEventType.WORKSHOP]: { bg: 'bg-blue-100', text: 'text-blue-800' },
@@ -14,10 +15,25 @@ const EVENT_TYPE_STYLES: Record<LabEventType, { bg: string, text: string }> = {
 };
 
 const PervexLabView: React.FC = () => {
-    const { labEvents, clients, users, deleteLabEvent } = useData();
+    const { labEvents, clients, users, deleteLabEvent, selectedClientId, selectedResponsibleId, selectedGerencia } = useData();
     const { isAdmin } = useAuth();
     const [isModalOpen, setModalOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<LabEvent | null>(null);
+
+    const filteredClients = useMemo(() => {
+        return filterClients(clients, selectedClientId, selectedResponsibleId, selectedGerencia);
+    }, [clients, selectedClientId, selectedResponsibleId, selectedGerencia]);
+
+    const filteredLabEvents = useMemo(() => {
+        if (filteredClients.length === 0 && (selectedClientId !== 'all' || selectedResponsibleId !== 'all' || selectedGerencia !== 'all')) {
+            return [];
+        }
+        const filteredClientIds = new Set(filteredClients.map(c => c.id));
+        return labEvents.filter(event => {
+            if (!event.client_id) return true; // Eventos generales siempre se muestran
+            return filteredClientIds.has(event.client_id);
+        });
+    }, [labEvents, filteredClients, selectedClientId, selectedResponsibleId, selectedGerencia]);
 
     const handleCreate = () => {
         setEditingEvent(null);
@@ -62,7 +78,7 @@ const PervexLabView: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {labEvents.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(event => {
+                            {filteredLabEvents.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(event => {
                                 const client = clients.find(c => c.id === event.client_id);
                                 const owner = users.find(u => u.id === event.owner_user_id);
                                 const style = EVENT_TYPE_STYLES[event.type];

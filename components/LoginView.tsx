@@ -79,12 +79,6 @@ export const LoginView: React.FC = () => {
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
-
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p><strong>Credenciales de prueba:</strong></p>
-          <p>Admin: <code className="bg-gray-100 px-2 py-1 rounded">admin@mgi.local</code></p>
-          <p>Contraseña: <code className="bg-gray-100 px-2 py-1 rounded">password123</code></p>
-        </div>
       </div>
     </div>
   );

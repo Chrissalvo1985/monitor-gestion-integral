@@ -8,6 +8,7 @@ import { ClientExperienceModal } from '../components/ClientExperienceModal';
 import { CollaboratorExperiencePlanModal } from '../components/CollaboratorExperiencePlanModal';
 import { StatusBadge } from '../components/StatusBadge';
 import { ProgressBar } from '../components/ProgressBar';
+import { filterClients } from '../utils/calculations';
 
 const NpsCard: React.FC<{ experience: ClientExperience | undefined; onEdit: () => void; isAdmin: boolean }> = ({ experience, onEdit, isAdmin }) => {
     const score = experience?.nps_score ?? null;
@@ -56,22 +57,27 @@ const NpsCard: React.FC<{ experience: ClientExperience | undefined; onEdit: () =
 };
 
 const ExperienceView: React.FC = () => {
-    const { selectedClientId, clients, clientExperiences, collaboratorExperiencePlans, processAreas, users, deleteCollaboratorExperiencePlan } = useData();
+    const { selectedClientId, selectedResponsibleId, selectedGerencia, clients, clientExperiences, collaboratorExperiencePlans, processAreas, users, deleteCollaboratorExperiencePlan } = useData();
     const { isAdmin } = useAuth();
 
     const [isNpsModalOpen, setNpsModalOpen] = useState(false);
     const [isPlanModalOpen, setPlanModalOpen] = useState(false);
     const [editingPlan, setEditingPlan] = useState<CollaboratorExperiencePlan | null>(null);
 
+    const filteredClients = useMemo(() => {
+        return filterClients(clients, selectedClientId, selectedResponsibleId, selectedGerencia);
+    }, [clients, selectedClientId, selectedResponsibleId, selectedGerencia]);
+
     const selectedClientExperience = useMemo(() => {
-        if (!selectedClientId) return undefined;
-        return clientExperiences.find(ce => ce.client_id === selectedClientId);
-    }, [clientExperiences, selectedClientId]);
+        if (filteredClients.length !== 1) return undefined;
+        return clientExperiences.find(ce => ce.client_id === filteredClients[0].id);
+    }, [clientExperiences, filteredClients]);
 
     const selectedClientPlans = useMemo(() => {
-        if (!selectedClientId) return [];
-        return collaboratorExperiencePlans.filter(cep => cep.client_id === selectedClientId);
-    }, [collaboratorExperiencePlans, selectedClientId]);
+        if (filteredClients.length === 0) return [];
+        const filteredClientIds = new Set(filteredClients.map(c => c.id));
+        return collaboratorExperiencePlans.filter(cep => filteredClientIds.has(cep.client_id));
+    }, [collaboratorExperiencePlans, filteredClients]);
 
     const handleEditPlan = (plan: CollaboratorExperiencePlan) => {
         setEditingPlan(plan);
@@ -89,13 +95,13 @@ const ExperienceView: React.FC = () => {
         }
     };
 
-    const selectedClientName = clients.find(c => c.id === selectedClientId)?.name;
+    const selectedClientName = filteredClients.length === 1 ? filteredClients[0].name : undefined;
 
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-gray-800">Gestión de Experiencias</h1>
 
-            {selectedClientId && selectedClientId !== 'all' ? (
+            {filteredClients.length === 1 ? (
                 <div className="space-y-6">
                     <NpsCard experience={selectedClientExperience} onEdit={() => setNpsModalOpen(true)} isAdmin={isAdmin} />
                     

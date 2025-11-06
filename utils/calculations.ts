@@ -1,5 +1,5 @@
 
-import { Client, TechImplementation, BiClientPanel, ProcessSurvey, ImplementationStatus } from '../types';
+import { Client, TechImplementation, BiClientPanel, ProcessSurvey, ImplementationStatus, Gerencia } from '../types';
 
 export const calculateTechProgress = (implementations: TechImplementation[]): number => {
     const relevantImpls = implementations.filter(impl => impl.status !== ImplementationStatus.DEPRECATED);
@@ -48,4 +48,27 @@ export const calculateClientHealthScore = (
     const score = (0.4 * avg_tech + 0.3 * avg_bi + 0.3 * avg_process) * 100 - penalty;
 
     return Math.max(0, Math.min(100, Math.round(score)));
+};
+
+export const filterClients = (
+    clients: Client[],
+    selectedClientId: string | null,
+    selectedResponsibleId: string | null,
+    selectedGerencia: string | null
+): Client[] => {
+    return clients.filter(client => {
+        // Filtro por cliente
+        if (selectedClientId && selectedClientId !== 'all' && client.id !== selectedClientId) {
+            return false;
+        }
+        // Filtro por responsable
+        if (selectedResponsibleId && selectedResponsibleId !== 'all' && client.owner_user_id !== selectedResponsibleId) {
+            return false;
+        }
+        // Filtro por gerencia
+        if (selectedGerencia && selectedGerencia !== 'all' && client.gerencia !== selectedGerencia) {
+            return false;
+        }
+        return true;
+    });
 };

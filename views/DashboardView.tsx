@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { MetricCard } from '../components/MetricCard';
 import { Card } from '../components/Card';
 import { ImplementationStatus, Client } from '../types';
-import { calculateTechProgress, calculateBiProgress, calculateProcessProgress } from '../utils/calculations';
+import { calculateTechProgress, calculateBiProgress, calculateProcessProgress, filterClients } from '../utils/calculations';
 import { useData } from '../hooks/useData';
 import { useAuth } from '../hooks/useAuth';
 import { ClientFormModal } from '../components/ClientFormModal';
@@ -27,7 +27,7 @@ const StatusIcon = ({ status }: { status?: ImplementationStatus }) => {
 
 
 const DashboardView: React.FC = () => {
-    const { clients, techPlatforms, techImplementations, biClientPanels, processSurveys, selectedClientId, deleteClient, users } = useData();
+    const { clients, techPlatforms, techImplementations, biClientPanels, processSurveys, selectedClientId, selectedResponsibleId, selectedGerencia, deleteClient, users } = useData();
     const { isAdmin } = useAuth();
     const [isClientModalOpen, setClientModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -43,14 +43,14 @@ const DashboardView: React.FC = () => {
     };
     
     const filteredClients = useMemo(() => {
-        if (selectedClientId === 'all') return clients;
-        return clients.filter(c => c.id === selectedClientId);
-    }, [clients, selectedClientId]);
+        return filterClients(clients, selectedClientId, selectedResponsibleId, selectedGerencia);
+    }, [clients, selectedClientId, selectedResponsibleId, selectedGerencia]);
 
     const kpis = useMemo(() => {
-        const relevantClients = selectedClientId === 'all' ? clients : clients.filter(c => c.id === selectedClientId);
-        const relevantTech = selectedClientId === 'all' ? techImplementations : techImplementations.filter(t => t.client_id === selectedClientId);
-        const relevantBi = selectedClientId === 'all' ? biClientPanels : biClientPanels.filter(b => b.client_id === selectedClientId);
+        const relevantClients = filterClients(clients, selectedClientId, selectedResponsibleId, selectedGerencia);
+        const relevantClientIds = new Set(relevantClients.map(c => c.id));
+        const relevantTech = techImplementations.filter(t => relevantClientIds.has(t.client_id));
+        const relevantBi = biClientPanels.filter(b => relevantClientIds.has(b.client_id));
         
         const implementedClients = relevantClients.filter(c => 
             relevantTech.some(ti => ti.client_id === c.id && ti.status === ImplementationStatus.IMPLEMENTADO)
@@ -65,7 +65,7 @@ const DashboardView: React.FC = () => {
             blocked: relevantTech.filter(ti => ti.status === ImplementationStatus.BLOQUEADO).length +
                      relevantBi.filter(bcp => bcp.status === ImplementationStatus.BLOQUEADO).length,
         };
-    }, [clients, techImplementations, biClientPanels, processSurveys, selectedClientId]);
+    }, [clients, techImplementations, biClientPanels, processSurveys, selectedClientId, selectedResponsibleId, selectedGerencia]);
     
 
     return (

@@ -22,6 +22,10 @@ export interface IDataContext {
     
     selectedClientId: string | null;
     setSelectedClientId: (id: string | null) => void;
+    selectedResponsibleId: string | null;
+    setSelectedResponsibleId: (id: string | null) => void;
+    selectedGerencia: string | null;
+    setSelectedGerencia: (gerencia: string | null) => void;
     refreshUsers: () => Promise<void>;
 
     // CRUD functions

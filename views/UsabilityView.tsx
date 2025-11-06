@@ -1,16 +1,21 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card } from '../components/Card';
 import { useData } from '../hooks/useData';
 import { useAuth } from '../hooks/useAuth';
 import { ProgressBar } from '../components/ProgressBar';
 import { UsabilityFormModal } from '../components/UsabilityFormModal';
+import { filterClients } from '../utils/calculations';
 
 const UsabilityView: React.FC = () => {
-    const { clients, techPlatforms, techUsability } = useData();
+    const { clients, techPlatforms, techUsability, selectedClientId, selectedResponsibleId, selectedGerencia } = useData();
     const { isAdmin } = useAuth();
     const [isModalOpen, setModalOpen] = useState(false);
     const [editingContext, setEditingContext] = useState<{ clientId: string; platformId: string; } | null>(null);
+
+    const filteredClients = useMemo(() => {
+        return filterClients(clients, selectedClientId, selectedResponsibleId, selectedGerencia);
+    }, [clients, selectedClientId, selectedResponsibleId, selectedGerencia]);
 
     const handleOpenModal = (clientId: string, platformId: string) => {
         setEditingContext({ clientId, platformId });
@@ -33,7 +38,7 @@ const UsabilityView: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {clients.map(client => (
+                            {filteredClients.map(client => (
                                 <tr key={client.id} className="bg-white border-b hover:bg-gray-50 group">
                                     <th scope="row" className="px-6 py-4 font-bold text-gray-900 whitespace-nowrap sticky left-0 bg-white group-hover:bg-gray-50 z-10 text-left">
                                         {client.name}

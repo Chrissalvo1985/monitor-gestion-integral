@@ -3,7 +3,11 @@ const getApiBaseUrl = () => {
   if (typeof window === 'undefined') {
     return 'http://localhost:3001/api';
   }
-  // Always use same origin - no hardcoded URLs
+  // En desarrollo, usar URL relativa (el proxy de Vite lo maneja)
+  // En producción, usar same origin
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return '/api'; // El proxy de Vite redirige a localhost:3001
+  }
   return `${window.location.origin}/api`;
 };
 
