@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
+import { FilterBar } from './components/FilterBar';
 import { ViewType, Client, TechImplementation, BiClientPanel, ProcessSurvey, Alert, LabEvent, User, TechPlatform, BiPanel, ProcessArea, ClientExperience, CollaboratorExperiencePlan, TechUsability } from './types';
 import { calculateClientHealthScore } from './utils/calculations';
 import { DataContext } from './context/DataContext';
@@ -25,6 +26,7 @@ const AppContent: React.FC = () => {
   const [selectedResponsibleId, setSelectedResponsibleId] = useState<string | null>('all');
   const [selectedGerencia, setSelectedGerencia] = useState<string | null>('all');
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // State management for all data
   const [clients, setClients] = useState<Client[]>([]);
@@ -382,10 +384,10 @@ const AppContent: React.FC = () => {
       
       return {
         ...client,
-        health_score: calculateClientHealthScore(client, clientTechImpls, clientBiPanels, []),
+        health_score: calculateClientHealthScore(client, clientTechImpls, clientBiPanels, [], techPlatforms),
       };
     });
-  }, [clients, techImplementations, biClientPanels]);
+  }, [clients, techImplementations, biClientPanels, techPlatforms]);
 
   const dataContextValue = {
     clients: processedClients,
@@ -446,7 +448,7 @@ const AppContent: React.FC = () => {
     }
   };
 
-  // Mostrar pantalla de login si no hay usuario autenticado
+  // Check authentication - after all hooks
   if (!currentUser && !authLoading) {
     return <LoginView />;
   }
@@ -464,12 +466,22 @@ const AppContent: React.FC = () => {
 
   return (
     <DataContext.Provider value={dataContextValue}>
-        <div className="flex h-screen bg-[#F4F6FA] text-[#1f2937]">
-          <Sidebar activeView={activeView} setActiveView={setActiveView} />
-          <main className="flex-1 flex flex-col overflow-hidden">
-            <Header />
-            <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
-              {renderView()}
+        <div className="flex h-screen w-full bg-[#F4F6FA] text-[#1f2937] overflow-hidden">
+          <Sidebar 
+            activeView={activeView} 
+            setActiveView={setActiveView}
+            isOpen={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+          />
+          <main className="flex-1 flex flex-col overflow-hidden min-w-0 h-full">
+            <Header onMenuClick={() => setSidebarOpen(true)} />
+            <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
+              <div className="p-2 sm:p-4 md:p-6 lg:p-8 flex-1 overflow-hidden min-h-0 flex flex-col">
+                <FilterBar activeView={activeView} />
+                <div className="flex-1 overflow-hidden min-h-0">
+                  {renderView()}
+                </div>
+              </div>
             </div>
           </main>
         </div>

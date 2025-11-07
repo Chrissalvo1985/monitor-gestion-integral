@@ -61,7 +61,7 @@ export const LabEventFormModal: React.FC<LabEventFormModalProps> = ({ isOpen, on
           <label htmlFor="topic" className="block text-sm font-medium text-gray-700">Tema del Evento</label>
           <input type="text" name="topic" value={formData.topic} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-white text-gray-900" />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label htmlFor="date" className="block text-sm font-medium text-gray-700">Fecha</label>
               <input type="date" name="date" value={formData.date} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-white text-gray-900" />
@@ -73,7 +73,7 @@ export const LabEventFormModal: React.FC<LabEventFormModalProps> = ({ isOpen, on
               </select>
             </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
              <div>
               <label htmlFor="owner_user_id" className="block text-sm font-medium text-gray-700">Responsable</label>
               <select name="owner_user_id" value={formData.owner_user_id} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-white text-gray-900">
@@ -92,9 +92,9 @@ export const LabEventFormModal: React.FC<LabEventFormModalProps> = ({ isOpen, on
           <label htmlFor="outcomes" className="block text-sm font-medium text-gray-700">Resultados</label>
           <textarea name="outcomes" value={formData.outcomes} onChange={handleChange} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-white text-gray-900" />
         </div>
-        <div className="flex justify-end pt-4 space-x-3">
-          <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
-          <button type="submit" className="bg-[#0055B8] text-white px-4 py-2 rounded-md hover:bg-[#003F8C]">Guardar Evento</button>
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+          <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 text-sm sm:text-base order-2 sm:order-1">Cancelar</button>
+          <button type="submit" className="bg-[#0055B8] text-white px-4 py-2 rounded-md hover:bg-[#003F8C] text-sm sm:text-base order-1 sm:order-2">Guardar Evento</button>
         </div>
       </form>
     </Modal>

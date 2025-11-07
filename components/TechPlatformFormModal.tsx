@@ -75,19 +75,19 @@ export const TechPlatformFormModal: React.FC<TechPlatformFormModalProps> = ({ is
             Códigos existentes: SINEX, NSS, WF_SELECCION, ECRMOVIL, PORTAL_CLIENTE, PANEL_SUPERVISORES
           </p>
         </div>
-        <div className="flex justify-end pt-4 space-x-3">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
           <button 
             type="button" 
             onClick={onClose} 
             disabled={isSubmitting}
-            className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 disabled:opacity-50"
+            className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 disabled:opacity-50 text-sm sm:text-base order-2 sm:order-1"
           >
             Cancelar
           </button>
           <button 
             type="submit" 
             disabled={isSubmitting}
-            className="bg-[#0055B8] text-white px-4 py-2 rounded-md hover:bg-[#003F8C] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#0055B8] text-white px-4 py-2 rounded-md hover:bg-[#003F8C] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base order-1 sm:order-2"
           >
             {isSubmitting ? 'Guardando...' : 'Guardar Sistema'}
           </button>

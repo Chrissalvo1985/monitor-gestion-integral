@@ -92,20 +92,20 @@ export const TechImplementationModal: React.FC<TechImplementationModalProps> = (
           <textarea name="notes" id="notes" value={formData.notes || ''} onChange={handleChange} disabled={!isAdmin} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-white text-gray-900 disabled:opacity-50" />
         </div>
 
-        <div className="flex justify-between pt-4">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
           {isAdmin && (
             <button 
               type="button" 
               onClick={handleDelete} 
-              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors text-sm sm:text-base order-2 sm:order-1"
             >
               Eliminar Implementación
             </button>
           )}
-          <div className={`space-x-3 ${!isAdmin ? 'w-full flex justify-end' : ''}`}>
-            <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
+          <div className={`flex gap-3 ${!isAdmin ? 'w-full justify-end' : 'order-1 sm:order-2'}`}>
+            <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 text-sm sm:text-base flex-1 sm:flex-initial">Cancelar</button>
             {isAdmin && (
-              <button type="submit" className="bg-[#0055B8] text-white px-4 py-2 rounded-md hover:bg-[#003F8C]">Guardar Cambios</button>
+              <button type="submit" className="bg-[#0055B8] text-white px-4 py-2 rounded-md hover:bg-[#003F8C] text-sm sm:text-base flex-1 sm:flex-initial">Guardar Cambios</button>
             )}
           </div>
         </div>

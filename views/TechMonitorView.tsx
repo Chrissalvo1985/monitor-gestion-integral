@@ -65,18 +65,18 @@ const TechMonitorView: React.FC = () => {
     const selectedClient = filteredClients.length === 1 ? filteredClients[0] : null;
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-wrap justify-between items-center gap-4">
-                <h1 className="text-3xl font-bold text-gray-800">Gestión de Tecnología</h1>
+        <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestión de Tecnología</h1>
                 {isAdmin && (
-                    <button onClick={() => setPlatformModalOpen(true)} className="bg-gradient-to-r from-[#FF7E2D] to-orange-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all">
+                    <button onClick={() => setPlatformModalOpen(true)} className="bg-gradient-to-r from-[#FF7E2D] to-orange-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all text-sm sm:text-base whitespace-nowrap">
                         + Añadir Nuevo Sistema
                     </button>
                 )}
             </div>
 
             {filteredClients.length > 0 && !allFiltersAreAll ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {techPlatforms.map(platform => {
                         const impl = getImplementationForPlatform(platform.id);
                         const owner = users.find(u => u.id === impl?.owner_user_id);

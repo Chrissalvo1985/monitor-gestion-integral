@@ -1,5 +1,5 @@
 
-import { Client, TechImplementation, BiClientPanel, ProcessSurvey, ImplementationStatus, Gerencia } from '../types';
+import { Client, TechImplementation, BiClientPanel, ProcessSurvey, ImplementationStatus, Gerencia, TechPlatform } from '../types';
 
 export const calculateTechProgress = (implementations: TechImplementation[]): number => {
     const relevantImpls = implementations.filter(impl => impl.status !== ImplementationStatus.DEPRECATED);
@@ -27,8 +27,32 @@ export const calculateClientHealthScore = (
     client: Client,
     techImpls: TechImplementation[],
     biPanels: BiClientPanel[],
-    processSurveys: ProcessSurvey[]
+    processSurveys: ProcessSurvey[],
+    techPlatforms: TechPlatform[] = []
 ): number => {
+    // Verificar si tiene todas las herramientas tech implementadas y al menos 1 modelo BI
+    // Filtrar implementaciones relevantes (excluyendo DEPRECATED y NO_INICIADO)
+    const relevantTechImpls = techImpls.filter(impl => 
+        impl.status !== ImplementationStatus.DEPRECATED && 
+        impl.status !== ImplementationStatus.NO_INICIADO
+    );
+    
+    const hasBiModels = biPanels.length >= 1;
+    
+    // Si tiene implementaciones tech relevantes, verificar que todas estén implementadas
+    if (relevantTechImpls.length > 0) {
+        const allTechImplemented = relevantTechImpls.every(impl => 
+            impl.status === ImplementationStatus.IMPLEMENTADO
+        );
+        
+        // Si todas las herramientas tech están implementadas Y tiene al menos 1 modelo BI, retornar 100%
+        if (allTechImplemented && hasBiModels) {
+            return 100;
+        }
+    }
+    // Si no tiene implementaciones tech relevantes, no puede ser 100% (necesita tener al menos una herramienta tech)
+    
+    // Si no cumple las condiciones, aplicar la fórmula original
     const avg_tech = calculateTechProgress(techImpls) / 100;
     const avg_bi = calculateBiProgress(biPanels) / 100;
     const avg_process = calculateProcessProgress(processSurveys) / 100;

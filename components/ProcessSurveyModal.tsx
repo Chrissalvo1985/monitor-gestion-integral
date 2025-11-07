@@ -16,6 +16,8 @@ export const ProcessSurveyModal: React.FC<ProcessSurveyModalProps> = ({ isOpen, 
   useEffect(() => {
     if (survey) {
       setFormData(survey);
+    } else {
+      setFormData({});
     }
   }, [survey, isOpen]);
 
@@ -35,10 +37,8 @@ export const ProcessSurveyModal: React.FC<ProcessSurveyModalProps> = ({ isOpen, 
   
   const area = processAreas.find(a => a.id === survey?.area_id);
 
-  if (!survey) return null;
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Editar Proceso: ${area?.display_name}`}>
+    <Modal isOpen={isOpen && !!survey} onClose={onClose} title={`Editar Proceso: ${area?.display_name || ''}`}>
       <form onSubmit={handleSubmit} className="space-y-4">
         
         <div>
@@ -57,22 +57,22 @@ export const ProcessSurveyModal: React.FC<ProcessSurveyModalProps> = ({ isOpen, 
 
         <hr className="border-gray-200" />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-                <label htmlFor="mapeo_proceso_pct" className="block text-sm font-medium text-gray-700">Mapeo: {formData.mapeo_proceso_pct || 0}%</label>
-                <input type="range" name="mapeo_proceso_pct" value={formData.mapeo_proceso_pct || 0} onChange={handleChange} className="w-full" />
+                <label htmlFor="mapeo_proceso_pct" className="block text-sm font-medium text-gray-700 mb-2">Mapeo: {formData.mapeo_proceso_pct || 0}%</label>
+                <input type="range" name="mapeo_proceso_pct" value={formData.mapeo_proceso_pct || 0} onChange={handleChange} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
             </div>
              <div>
-                <label htmlFor="procedimientos_pct" className="block text-sm font-medium text-gray-700">Procedimientos: {formData.procedimientos_pct || 0}%</label>
-                <input type="range" name="procedimientos_pct" value={formData.procedimientos_pct || 0} onChange={handleChange} className="w-full" />
+                <label htmlFor="procedimientos_pct" className="block text-sm font-medium text-gray-700 mb-2">Procedimientos: {formData.procedimientos_pct || 0}%</label>
+                <input type="range" name="procedimientos_pct" value={formData.procedimientos_pct || 0} onChange={handleChange} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
             </div>
              <div>
-                <label htmlFor="controles_pct" className="block text-sm font-medium text-gray-700">Controles: {formData.controles_pct || 0}%</label>
-                <input type="range" name="controles_pct" value={formData.controles_pct || 0} onChange={handleChange} className="w-full" />
+                <label htmlFor="controles_pct" className="block text-sm font-medium text-gray-700 mb-2">Controles: {formData.controles_pct || 0}%</label>
+                <input type="range" name="controles_pct" value={formData.controles_pct || 0} onChange={handleChange} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
             </div>
              <div>
-                <label htmlFor="evidencias_pct" className="block text-sm font-medium text-gray-700">Evidencias: {formData.evidencias_pct || 0}%</label>
-                <input type="range" name="evidencias_pct" value={formData.evidencias_pct || 0} onChange={handleChange} className="w-full" />
+                <label htmlFor="evidencias_pct" className="block text-sm font-medium text-gray-700 mb-2">Evidencias: {formData.evidencias_pct || 0}%</label>
+                <input type="range" name="evidencias_pct" value={formData.evidencias_pct || 0} onChange={handleChange} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
             </div>
         </div>
 
@@ -83,9 +83,9 @@ export const ProcessSurveyModal: React.FC<ProcessSurveyModalProps> = ({ isOpen, 
           <textarea name="notes" id="notes" value={formData.notes || ''} onChange={handleChange} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-white text-gray-900" />
         </div>
 
-        <div className="flex justify-end pt-4 space-x-3">
-          <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md mr-2 hover:bg-gray-300">Cancelar</button>
-          <button type="submit" className="bg-[#0055B8] text-white px-4 py-2 rounded-md hover:bg-[#003F8C]">Guardar Cambios</button>
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+          <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 text-sm sm:text-base order-2 sm:order-1">Cancelar</button>
+          <button type="submit" className="bg-[#0055B8] text-white px-4 py-2 rounded-md hover:bg-[#003F8C] text-sm sm:text-base order-1 sm:order-2">Guardar Cambios</button>
         </div>
       </form>
     </Modal>

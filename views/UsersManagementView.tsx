@@ -4,6 +4,8 @@ import { useData } from '../hooks/useData';
 import { useAuth } from '../hooks/useAuth';
 import { User } from '../types';
 import { api } from '../lib/api';
+import { Pagination } from '../components/Pagination';
+import { usePagination } from '../hooks/usePagination';
 
 export const UsersManagementView: React.FC = () => {
   const { users, refreshUsers } = useData();
@@ -12,6 +14,16 @@ export const UsersManagementView: React.FC = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    paginatedItems: paginatedUsers,
+    totalItems,
+    goToPage,
+    handleItemsPerPageChange,
+  } = usePagination(users, 10);
 
   if (!isAdmin) {
     return (
@@ -50,72 +62,86 @@ export const UsersManagementView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800">Gestión de Usuarios</h1>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestión de Usuarios</h1>
         <button
           onClick={handleNew}
-          className="bg-[#0055B8] text-white px-6 py-3 rounded-lg hover:bg-[#003F8C] transition-colors font-semibold"
+          className="bg-[#0055B8] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-[#003F8C] transition-colors font-semibold text-sm sm:text-base whitespace-nowrap"
         >
           + Nuevo Usuario
         </button>
       </div>
 
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Nombre</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Rol</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Estado</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-700">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => (
-                <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-3 px-4">{user.name}</td>
-                  <td className="py-3 px-4 text-gray-600">{user.email}</td>
-                  <td className="py-3 px-4">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {user.role === 'admin' ? 'Administrador' : 'Usuario'}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {user.active ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right space-x-2">
-                    <button
-                      onClick={() => handleEdit(user)}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleChangePassword(user.id)}
-                      className="text-green-600 hover:text-green-800 font-medium"
-                    >
-                      Contraseña
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user.id, user.name)}
-                      className="text-red-600 hover:text-red-800 font-medium"
-                    >
-                      Eliminar
-                    </button>
-                  </td>
+      <Card className="overflow-hidden flex flex-col max-h-[calc(100vh-250px)] lg:max-h-[calc(100vh-280px)]">
+        <div className="overflow-x-auto overflow-y-auto -mx-4 sm:mx-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-1 min-h-0">
+          <div className="inline-block min-w-full align-middle">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 min-w-[120px]">Nombre</th>
+                  <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 min-w-[180px]">Email</th>
+                  <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 min-w-[100px]">Rol</th>
+                  <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 min-w-[100px]">Estado</th>
+                  <th className="text-right py-3 px-3 sm:px-4 font-semibold text-gray-700 min-w-[200px]">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {paginatedUsers.map(user => (
+                  <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-3 px-3 sm:px-4 whitespace-nowrap">{user.name}</td>
+                    <td className="py-3 px-3 sm:px-4 text-gray-600 whitespace-nowrap">{user.email}</td>
+                    <td className="py-3 px-3 sm:px-4">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {user.role === 'admin' ? 'Administrador' : 'Usuario'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 sm:px-4">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        user.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {user.active ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 sm:px-4 text-right">
+                      <div className="flex flex-wrap justify-end gap-2 sm:gap-2">
+                        <button
+                          onClick={() => handleEdit(user)}
+                          className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleChangePassword(user.id)}
+                          className="text-green-600 hover:text-green-800 font-medium text-sm"
+                        >
+                          Contraseña
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user.id, user.name)}
+                          className="text-red-600 hover:text-red-800 font-medium text-sm"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="flex-shrink-0 mt-4 pt-4 border-t border-gray-200">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={goToPage}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
         </div>
       </Card>
 
@@ -190,9 +216,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSuccess 
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4">{user ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4">{user ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
@@ -328,9 +354,9 @@ const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({ userId, onClo
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4">Cambiar Contraseña</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4">Cambiar Contraseña</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
