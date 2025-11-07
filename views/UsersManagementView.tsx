@@ -73,7 +73,7 @@ export const UsersManagementView: React.FC = () => {
         </button>
       </div>
 
-      <Card className="overflow-hidden flex flex-col max-h-[calc(100vh-250px)] lg:max-h-[calc(100vh-280px)]">
+      <Card className="overflow-hidden flex flex-col lg:max-h-[calc(100vh-280px)]">
         <div className="overflow-x-auto overflow-y-auto -mx-4 sm:mx-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-1 min-h-0">
           <div className="inline-block min-w-full align-middle">
             <table className="min-w-full divide-y divide-gray-200">

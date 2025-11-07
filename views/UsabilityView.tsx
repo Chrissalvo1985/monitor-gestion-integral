@@ -37,7 +37,7 @@ const UsabilityView: React.FC = () => {
     return (
         <div className="space-y-4 sm:space-y-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Monitor de Usabilidad</h1>
-            <Card className="overflow-hidden flex flex-col max-h-[calc(100vh-250px)] lg:max-h-[calc(100vh-280px)]">
+            <Card className="overflow-hidden flex flex-col lg:max-h-[calc(100vh-280px)]">
                 <h2 className="text-lg sm:text-xl font-bold mb-4 text-gray-700 flex-shrink-0">Porcentaje de Uso por Cliente y Sistema</h2>
                  <div className="overflow-x-auto overflow-y-auto -mx-4 sm:mx-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex-1 min-h-0">
                     <div className="inline-block min-w-full align-middle">

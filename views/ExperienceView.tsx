@@ -117,7 +117,7 @@ const ExperienceView: React.FC = () => {
                 <div className="space-y-4 sm:space-y-6">
                     <NpsCard experience={selectedClientExperience} onEdit={() => setNpsModalOpen(true)} isAdmin={isAdmin} />
                     
-                    <Card className="overflow-hidden flex flex-col max-h-[calc(100vh-350px)] lg:max-h-[calc(100vh-380px)]">
+                    <Card className="overflow-hidden flex flex-col lg:max-h-[calc(100vh-380px)]">
                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 flex-shrink-0">
                             <h2 className="text-lg sm:text-xl font-bold text-gray-700">Planes de Experiencia Colaborador ({selectedClientName})</h2>
                             {isAdmin && (

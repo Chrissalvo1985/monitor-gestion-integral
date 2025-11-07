@@ -473,12 +473,12 @@ const AppContent: React.FC = () => {
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
           />
-          <main className="flex-1 flex flex-col overflow-hidden min-w-0 h-full">
+          <main className="flex-1 flex flex-col overflow-y-auto lg:overflow-hidden min-w-0 h-full">
             <Header onMenuClick={() => setSidebarOpen(true)} />
-            <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
-              <div className="p-2 sm:p-4 md:p-6 lg:p-8 flex-1 overflow-hidden min-h-0 flex flex-col">
+            <div className="flex-1 lg:overflow-hidden min-h-0 flex flex-col">
+              <div className="p-2 sm:p-4 md:p-6 lg:p-8 flex-1 lg:overflow-hidden min-h-0 flex flex-col">
                 <FilterBar activeView={activeView} />
-                <div className="flex-1 overflow-hidden min-h-0">
+                <div className="flex-1 lg:overflow-hidden min-h-0">
                   {renderView()}
                 </div>
               </div>
