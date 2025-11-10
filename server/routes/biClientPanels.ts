@@ -1,12 +1,26 @@
 import express from 'express';
 import { query } from '../db.js';
+import { getUserContext, getClientFilterSQL } from '../utils/authUtils.js';
 
 const router = express.Router();
 
-// GET all BI client panels
+// GET all BI client panels (filtrado por permisos)
 router.get('/', async (req, res) => {
   try {
-    const result = await query('SELECT * FROM bi_client_panels ORDER BY last_update DESC');
+    const userContext = await getUserContext(req);
+    const clientFilter = getClientFilterSQL(userContext, 'client_id');
+    
+    let sql = 'SELECT * FROM bi_client_panels';
+    let params: any[] = [];
+    
+    if (clientFilter.sql) {
+      sql += ` WHERE ${clientFilter.sql}`;
+      params = clientFilter.params;
+    }
+    
+    sql += ' ORDER BY last_update DESC';
+    
+    const result = await query(sql, params);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching BI client panels:', error);

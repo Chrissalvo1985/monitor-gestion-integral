@@ -14,10 +14,16 @@ const getApiBaseUrl = () => {
 const API_BASE_URL = getApiBaseUrl();
 
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  // Obtener el usuario logueado desde localStorage
+  const currentUserStr = localStorage.getItem('currentUser');
+  const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
+  
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(currentUser && { 'X-User-Id': currentUser.id }),
+      ...(currentUser && { 'X-User-Role': currentUser.role }),
       ...options?.headers,
     },
   });
@@ -51,6 +57,8 @@ export const api = {
   updateUser: (id: string, data: any) => fetchAPI<any>(`/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteUser: (id: string) => fetchAPI<any>(`/users/${id}`, { method: 'DELETE' }),
   changePassword: (id: string, password: string) => fetchAPI<any>(`/users/${id}/password`, { method: 'PUT', body: JSON.stringify({ password }) }),
+  getUserClients: (id: string) => fetchAPI<string[]>(`/users/${id}/clients`),
+  updateUserClients: (id: string, clientIds: string[]) => fetchAPI<any>(`/users/${id}/clients`, { method: 'PUT', body: JSON.stringify({ client_ids: clientIds }) }),
 
   // Clients
   getClients: () => fetchAPI<any[]>('/clients'),

@@ -8,12 +8,14 @@ import { Pagination } from '../components/Pagination';
 import { usePagination } from '../hooks/usePagination';
 
 export const UsersManagementView: React.FC = () => {
-  const { users, refreshUsers } = useData();
+  const { users, refreshUsers, clients } = useData();
   const { isAdmin } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isClientAssignModalOpen, setIsClientAssignModalOpen] = useState(false);
+  const [assigningUser, setAssigningUser] = useState<User | null>(null);
 
   const {
     currentPage,
@@ -46,6 +48,11 @@ export const UsersManagementView: React.FC = () => {
   const handleChangePassword = (userId: string) => {
     setSelectedUserId(userId);
     setIsPasswordModalOpen(true);
+  };
+
+  const handleAssignClients = (user: User) => {
+    setAssigningUser(user);
+    setIsClientAssignModalOpen(true);
   };
 
   const handleDelete = async (userId: string, userName: string) => {
@@ -83,7 +90,8 @@ export const UsersManagementView: React.FC = () => {
                   <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 min-w-[180px]">Email</th>
                   <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 min-w-[100px]">Rol</th>
                   <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 min-w-[100px]">Estado</th>
-                  <th className="text-right py-3 px-3 sm:px-4 font-semibold text-gray-700 min-w-[200px]">Acciones</th>
+                  <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 min-w-[120px]">Clientes</th>
+                  <th className="text-right py-3 px-3 sm:px-4 font-semibold text-gray-700 min-w-[260px]">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -105,6 +113,15 @@ export const UsersManagementView: React.FC = () => {
                         {user.active ? 'Activo' : 'Inactivo'}
                       </span>
                     </td>
+                    <td className="py-3 px-3 sm:px-4">
+                      {user.role === 'admin' ? (
+                        <span className="text-xs text-gray-500 italic">Todos</span>
+                      ) : (
+                        <span className="text-xs text-gray-700">
+                          {user.assigned_clients?.length || 0} asignado{user.assigned_clients?.length !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </td>
                     <td className="py-3 px-3 sm:px-4 text-right">
                       <div className="flex flex-wrap justify-end gap-2 sm:gap-2">
                         <button
@@ -119,6 +136,14 @@ export const UsersManagementView: React.FC = () => {
                         >
                           Contraseña
                         </button>
+                        {user.role !== 'admin' && (
+                          <button
+                            onClick={() => handleAssignClients(user)}
+                            className="text-purple-600 hover:text-purple-800 font-medium text-sm"
+                          >
+                            Clientes
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDelete(user.id, user.name)}
                           className="text-red-600 hover:text-red-800 font-medium text-sm"
@@ -160,6 +185,18 @@ export const UsersManagementView: React.FC = () => {
             setIsPasswordModalOpen(false);
             setSelectedUserId(null);
           }}
+        />
+      )}
+
+      {isClientAssignModalOpen && assigningUser && (
+        <ClientAssignModal
+          user={assigningUser}
+          clients={clients}
+          onClose={() => {
+            setIsClientAssignModalOpen(false);
+            setAssigningUser(null);
+          }}
+          onSuccess={refreshUsers}
         />
       )}
     </div>
@@ -408,6 +445,151 @@ const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({ userId, onClo
               className="px-4 py-2 bg-[#0055B8] text-white rounded-md hover:bg-[#003F8C] disabled:opacity-50"
             >
               {loading ? 'Guardando...' : 'Cambiar Contraseña'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+interface ClientAssignModalProps {
+  user: User;
+  clients: any[];
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+const ClientAssignModal: React.FC<ClientAssignModalProps> = ({ user, clients, onClose, onSuccess }) => {
+  const [selectedClientIds, setSelectedClientIds] = useState<string[]>(user.assigned_clients || []);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredClients = clients.filter(client =>
+    client.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const toggleClient = (clientId: string) => {
+    setSelectedClientIds(prev =>
+      prev.includes(clientId)
+        ? prev.filter(id => id !== clientId)
+        : [...prev, clientId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedClientIds.length === filteredClients.length) {
+      // Deseleccionar todos los filtrados
+      setSelectedClientIds(prev =>
+        prev.filter(id => !filteredClients.some(c => c.id === id))
+      );
+    } else {
+      // Seleccionar todos los filtrados
+      setSelectedClientIds(prev => {
+        const newIds = filteredClients.map(c => c.id);
+        return [...new Set([...prev, ...newIds])];
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await api.updateUserClients(user.id, selectedClientIds);
+      await onSuccess();
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Error al asignar clientes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <h2 className="text-xl sm:text-2xl font-bold mb-2">Asignar Clientes</h2>
+        <p className="text-sm text-gray-600 mb-4">Usuario: <span className="font-semibold">{user.name}</span></p>
+
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm mb-4">
+              {error}
+            </div>
+          )}
+
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Buscar cliente..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            />
+          </div>
+
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-700">
+              {selectedClientIds.length} de {clients.length} cliente{clients.length !== 1 ? 's' : ''} seleccionado{selectedClientIds.length !== 1 ? 's' : ''}
+            </span>
+            <button
+              type="button"
+              onClick={handleSelectAll}
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              {selectedClientIds.length === filteredClients.length && filteredClients.length > 0 ? 'Deseleccionar' : 'Seleccionar'} visibles
+            </button>
+          </div>
+
+          <div className="border border-gray-300 rounded-md overflow-y-auto flex-1 min-h-0 max-h-96">
+            {filteredClients.length === 0 ? (
+              <div className="p-4 text-center text-gray-500 text-sm">
+                {searchTerm ? 'No se encontraron clientes' : 'No hay clientes disponibles'}
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {filteredClients.map(client => (
+                  <label
+                    key={client.id}
+                    className="flex items-center p-3 hover:bg-gray-50 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedClientIds.includes(client.id)}
+                      onChange={() => toggleClient(client.id)}
+                      className="mr-3 h-4 w-4 text-blue-600 rounded"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">{client.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {client.gerencia} • {client.headcount} colaboradores
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4 mt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 bg-[#0055B8] text-white rounded-md hover:bg-[#003F8C] disabled:opacity-50"
+            >
+              {loading ? 'Guardando...' : 'Guardar Asignación'}
             </button>
           </div>
         </form>

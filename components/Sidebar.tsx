@@ -28,15 +28,30 @@ const Logo = () => (
   
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, onClose }) => {
-  const { currentUser, isAdmin, logout } = useAuth();
+  const { currentUser, isAdmin, hasAssignedClients, logout } = useAuth();
+
+  // Vistas permitidas sin clientes asignados
+  const allowedViewsWithoutClients: ViewType[] = ['process', 'lab'];
 
   const visibleViews = VIEWS.filter(view => {
-    // Mostrar 'users' solo a administradores
+    // Ocultar 'users' para no administradores
     if (view.id === 'users') {
       return isAdmin;
     }
     return true;
   });
+
+  const isViewDisabled = (viewId: ViewType): boolean => {
+    // Los admins nunca están bloqueados
+    if (isAdmin) return false;
+    
+    // Si no tiene clientes asignados, solo permitir vistas específicas
+    if (!hasAssignedClients) {
+      return !allowedViewsWithoutClients.includes(viewId);
+    }
+    
+    return false;
+  };
 
   const handleViewChange = (view: ViewType) => {
     setActiveView(view);
@@ -77,23 +92,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
         </div>
         <nav className="flex-grow overflow-y-auto">
           <ul className="space-y-2">
-            {visibleViews.map(({ id, name, icon }) => (
-              <li key={id}>
-                <button
-                  onClick={() => handleViewChange(id)}
-                  className={`w-full flex items-center space-x-4 p-3 rounded-lg text-left transition-all duration-300 font-semibold ${
-                    activeView === id
-                      ? 'bg-blue-50 text-[#003F8C]'
-                      : 'text-[#6C7684] hover:bg-blue-50 hover:text-[#003F8C]'
-                  }`}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-colors duration-300 ${activeView === id ? 'text-[#0055B8]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    {icon}
-                  </svg>
-                  <span>{name}</span>
-                </button>
-              </li>
-            ))}
+            {visibleViews.map(({ id, name, icon }) => {
+              const disabled = isViewDisabled(id);
+              return (
+                <li key={id}>
+                  <button
+                    onClick={() => !disabled && handleViewChange(id)}
+                    disabled={disabled}
+                    className={`w-full flex items-center space-x-4 p-3 rounded-lg text-left transition-all duration-300 font-semibold ${
+                      disabled
+                        ? 'text-gray-400 cursor-not-allowed opacity-50'
+                        : activeView === id
+                          ? 'bg-blue-50 text-[#003F8C]'
+                          : 'text-[#6C7684] hover:bg-blue-50 hover:text-[#003F8C]'
+                    }`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-colors duration-300 ${activeView === id && !disabled ? 'text-[#0055B8]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      {icon}
+                    </svg>
+                    <span>{name}</span>
+                    {disabled && (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </nav>
         <div className="p-2 border-t border-gray-200 space-y-2">

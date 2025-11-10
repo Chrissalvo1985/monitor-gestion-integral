@@ -1,12 +1,26 @@
 import express from 'express';
 import { query } from '../db.js';
+import { getUserContext, getClientFilterSQL } from '../utils/authUtils.js';
 
 const router = express.Router();
 
-// GET all client experiences
+// GET all client experiences (filtrado por permisos)
 router.get('/', async (req, res) => {
   try {
-    const result = await query('SELECT * FROM client_experiences ORDER BY last_survey_date DESC');
+    const userContext = await getUserContext(req);
+    const clientFilter = getClientFilterSQL(userContext, 'client_id');
+    
+    let sql = 'SELECT * FROM client_experiences';
+    let params: any[] = [];
+    
+    if (clientFilter.sql) {
+      sql += ` WHERE ${clientFilter.sql}`;
+      params = clientFilter.params;
+    }
+    
+    sql += ' ORDER BY last_survey_date DESC';
+    
+    const result = await query(sql, params);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching client experiences:', error);

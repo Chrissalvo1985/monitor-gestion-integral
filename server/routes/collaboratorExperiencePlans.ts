@@ -1,12 +1,26 @@
 import express from 'express';
 import { query } from '../db.js';
+import { getUserContext, getClientFilterSQL } from '../utils/authUtils.js';
 
 const router = express.Router();
 
-// GET all collaborator experience plans
+// GET all collaborator experience plans (filtrado por permisos)
 router.get('/', async (req, res) => {
   try {
-    const result = await query('SELECT * FROM collaborator_experience_plans ORDER BY last_update DESC');
+    const userContext = await getUserContext(req);
+    const clientFilter = getClientFilterSQL(userContext, 'client_id');
+    
+    let sql = 'SELECT * FROM collaborator_experience_plans';
+    let params: any[] = [];
+    
+    if (clientFilter.sql) {
+      sql += ` WHERE ${clientFilter.sql}`;
+      params = clientFilter.params;
+    }
+    
+    sql += ' ORDER BY last_update DESC';
+    
+    const result = await query(sql, params);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching collaborator experience plans:', error);

@@ -35,53 +35,53 @@ const ProcessMonitorView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestión de Procesos</h1>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 {processAreas.map(area => {
                     const survey = processSurveys.find(s => s.area_id === area.id);
                     const owner = users.find(u => u.id === survey?.owner_user_id);
                     
                     return (
-                        <Card key={area.id}>
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-lg font-bold">{area.display_name}</h3>
+                        <Card key={area.id} className="p-3">
+                            <div className="flex justify-between items-start mb-2">
+                                <h3 className="text-sm font-bold">{area.display_name}</h3>
                                 <StatusBadge status={survey?.status || ProcessSurveyStatus.NO_INICIADO} />
                             </div>
                             
                             {survey ? (
-                                <div className="space-y-3">
-                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                <div className="space-y-2">
+                                    <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs">
                                         <div>
-                                            <p>Mapeo</p>
+                                            <p className="font-medium mb-0.5">Mapeo</p>
                                             <ProgressBar progress={survey.mapeo_proceso_pct} />
                                         </div>
                                         <div>
-                                            <p>Procedimientos</p>
+                                            <p className="font-medium mb-0.5">Procedimientos</p>
                                             <ProgressBar progress={survey.procedimientos_pct} />
                                         </div>
                                         <div>
-                                            <p>Controles</p>
+                                            <p className="font-medium mb-0.5">Controles</p>
                                             <ProgressBar progress={survey.controles_pct} />
                                         </div>
                                         <div>
-                                            <p>Evidencias</p>
+                                            <p className="font-medium mb-0.5">Evidencias</p>
                                             <ProgressBar progress={survey.evidencias_pct} />
                                         </div>
                                     </div>
-                                    <div className="text-sm pt-2 border-t border-gray-200">
+                                    <div className="text-xs pt-1.5 border-t border-gray-200 space-y-0.5">
                                         <p><strong>Owner:</strong> {owner?.name || 'N/A'}</p>
                                         <p><strong>Última Act.:</strong> {new Date(survey.last_update).toLocaleDateString()}</p>
                                     </div>
                                     {isAdmin && (
-                                        <button onClick={() => handleEdit(survey)} className="w-full mt-2 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold">
+                                        <button onClick={() => handleEdit(survey)} className="w-full mt-1.5 bg-indigo-600 text-white py-1.5 rounded-lg hover:bg-indigo-700 transition-colors text-xs font-semibold">
                                             Editar Levantamiento
                                         </button>
                                     )}
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
-                                    <p className="mb-4">No se ha iniciado el levantamiento para esta área.</p>
+                                    <p className="mb-3 text-sm">No se ha iniciado el levantamiento para esta área.</p>
                                     {isAdmin && (
-                                        <button onClick={() => handleCreate(area.id)} className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-semibold">
+                                        <button onClick={() => handleCreate(area.id)} className="w-full bg-gray-200 text-gray-700 py-1.5 rounded-lg hover:bg-gray-300 transition-colors text-xs font-semibold">
                                             Iniciar Levantamiento
                                         </button>
                                     )}

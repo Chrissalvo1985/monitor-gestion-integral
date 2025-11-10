@@ -43,8 +43,10 @@ const AppContent: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [processAreas, setProcessAreas] = useState<ProcessArea[]>([]);
 
-  // Load data from API
+  // Load data from API - reload when currentUser changes
   useEffect(() => {
+    if (!currentUser) return;
+    
     const loadData = async () => {
       try {
         setLoading(true);
@@ -99,7 +101,7 @@ const AppContent: React.FC = () => {
     };
 
     loadData();
-  }, []);
+  }, [currentUser]);
 
   const refreshUsers = async () => {
     const usersData = await api.getUsers();

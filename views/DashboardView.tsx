@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { MetricCard } from '../components/MetricCard';
 import { Card } from '../components/Card';
+import { NoClientsAccess } from '../components/NoClientsAccess';
 import { ImplementationStatus, Client } from '../types';
 import { calculateTechProgress, calculateBiProgress, calculateProcessProgress, filterClients } from '../utils/calculations';
 import { useData } from '../hooks/useData';
@@ -30,9 +31,13 @@ const StatusIcon = ({ status }: { status?: ImplementationStatus }) => {
 
 const DashboardView: React.FC = () => {
     const { clients, techPlatforms, techImplementations, biClientPanels, processSurveys, selectedClientId, selectedResponsibleId, selectedGerencia, deleteClient, users } = useData();
-    const { isAdmin } = useAuth();
+    const { isAdmin, hasAssignedClients } = useAuth();
     const [isClientModalOpen, setClientModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState<Client | null>(null);
+
+    if (!hasAssignedClients) {
+        return <NoClientsAccess />;
+    }
 
     const handleOpenCreateModal = () => {
         setEditingClient(null);
@@ -90,8 +95,6 @@ const DashboardView: React.FC = () => {
             avgBi: calculateBiProgress(relevantBi),
             biModelsCount: biModelsCount,
             avgProcess: calculateProcessProgress(processSurveys), // Processes are global
-            blocked: relevantTech.filter(ti => ti.status === ImplementationStatus.BLOQUEADO).length +
-                     relevantBi.filter(bcp => bcp.status === ImplementationStatus.BLOQUEADO).length,
         };
     }, [clients, techImplementations, biClientPanels, processSurveys, selectedClientId, selectedResponsibleId, selectedGerencia]);
     
@@ -108,13 +111,12 @@ const DashboardView: React.FC = () => {
                     )}
                 </div>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
                     <MetricCard title="Total Clientes" value={kpis.totalClients} colorClasses="from-blue-500 to-blue-600" icon={<path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.952A3 3 0 003 10.5c0-1.657 1.343-3 3-3a3 3 0 003 3v-1.5a1.5 1.5 0 011.5-1.5h1.5a1.5 1.5 0 011.5 1.5v1.5a3 3 0 003 3a3 3 0 003-3a3 3 0 00-3-3m-3.75 3.75z" />} />
                     <MetricCard title="Health Score Prom." value={`${kpis.avgHealth}%`} colorClasses="from-teal-400 to-teal-500" icon={<path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-2.072-1.036A59.902 59.902 0 0112 3.493a59.902 59.902 0 0110.399 5.84l-2.072 1.036m-8.322 0A50.57 50.57 0 0112 14.565a50.57 50.57 0 012.158-4.418" />} />
                     <MetricCard title="Herramientas Tech" value={`${kpis.techImplemented} / ${kpis.techPlanned}`} colorClasses="from-purple-400 to-purple-500" icon={<path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />} />
                     <MetricCard title="Modelos BI" value={kpis.biModelsCount} colorClasses="from-sky-400 to-sky-500" icon={<path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 1.5m1-1.5l1 1.5m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605" />} />
                     <MetricCard title="% Avance Procesos" value={`${kpis.avgProcess}%`} colorClasses="from-indigo-400 to-indigo-500" icon={<path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />} />
-                    <MetricCard title="# Bloqueados" value={kpis.blocked} colorClasses="from-red-500 to-red-600" icon={<path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />} />
                 </div>
             </div>
 

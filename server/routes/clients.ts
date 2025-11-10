@@ -1,13 +1,19 @@
 import express from 'express';
 import { query } from '../db.js';
+import { getUserContext, filterClientsByPermissions } from '../utils/authUtils.js';
 
 const router = express.Router();
 
-// GET all clients
+// GET all clients (filtrado por permisos del usuario)
 router.get('/', async (req, res) => {
   try {
+    const userContext = await getUserContext(req);
     const result = await query('SELECT * FROM clients ORDER BY name');
-    res.json(result.rows);
+    
+    // Filtrar clientes según los permisos del usuario
+    const filteredClients = filterClientsByPermissions(result.rows, userContext);
+    
+    res.json(filteredClients);
   } catch (error) {
     console.error('Error fetching clients:', error);
     res.status(500).json({ error: 'Failed to fetch clients' });

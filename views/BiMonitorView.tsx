@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Card } from '../components/Card';
+import { NoClientsAccess } from '../components/NoClientsAccess';
 import { StatusBadge } from '../components/StatusBadge';
 import { ProgressBar } from '../components/ProgressBar';
 import { BiClientPanel, ImplementationStatus, BiPanel } from '../types';
@@ -11,11 +12,15 @@ import { filterClients } from '../utils/calculations';
 
 const BiMonitorView: React.FC = () => {
     const { clients, biPanels, biClientPanels, users, selectedClientId, selectedResponsibleId, selectedGerencia } = useData();
-    const { isAdmin } = useAuth();
+    const { isAdmin, hasAssignedClients } = useAuth();
     const [editingPanel, setEditingPanel] = useState<{clientPanel: BiClientPanel, panelInfo: BiPanel} | null>(null);
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const gridRef = useRef<HTMLDivElement>(null);
     const [maxRowHeight, setMaxRowHeight] = useState<number>(300);
+
+    if (!hasAssignedClients) {
+        return <NoClientsAccess />;
+    }
 
     const handleEdit = (clientPanel: BiClientPanel) => {
         const panelInfo = biPanels.find(p => p.id === clientPanel.panel_id);

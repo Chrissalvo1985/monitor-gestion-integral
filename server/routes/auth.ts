@@ -37,12 +37,23 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
+    // Obtener clientes asignados (solo para usuarios no admin)
+    let assignedClients: string[] = [];
+    if (user.role !== 'admin') {
+      const clientsResult = await query(
+        'SELECT client_id FROM user_clients WHERE user_id = $1',
+        [user.id]
+      );
+      assignedClients = clientsResult.rows.map(row => row.client_id);
+    }
+
     // Retornar datos del usuario (sin password)
     res.json({
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
+      assigned_clients: assignedClients,
     });
   } catch (error) {
     console.error('Error en login:', error);

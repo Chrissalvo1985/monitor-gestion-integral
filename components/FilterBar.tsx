@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { useData } from '../hooks/useData';
+import { useAuth } from '../hooks/useAuth';
 import { Gerencia, ViewType } from '../types';
 
 interface FilterBarProps {
@@ -19,36 +20,57 @@ export const FilterBar: React.FC<FilterBarProps> = ({ activeView }) => {
         selectedGerencia,
         setSelectedGerencia
     } = useData();
+    
+    const { currentUser, isAdmin } = useAuth();
 
-    // Obtener clientes filtrados según la jerarquía
+    // Obtener clientes filtrados según permisos y jerarquía
     const availableClients = useMemo(() => {
         let filtered = clients;
         
-        // Filtrar por gerencia
+        // PRIMERO: Filtrar por permisos del usuario (si no es admin)
+        if (!isAdmin && currentUser?.assigned_clients) {
+            if (currentUser.assigned_clients.length > 0) {
+                filtered = filtered.filter(c => currentUser.assigned_clients!.includes(c.id));
+            } else {
+                // Usuario sin clientes asignados, no mostrar ninguno
+                filtered = [];
+            }
+        }
+        
+        // DESPUÉS: Filtrar por gerencia
         if (selectedGerencia && selectedGerencia !== 'all') {
             filtered = filtered.filter(c => c.gerencia === selectedGerencia);
         }
         
-        // Filtrar por responsable
+        // FINALMENTE: Filtrar por responsable
         if (selectedResponsibleId && selectedResponsibleId !== 'all') {
             filtered = filtered.filter(c => c.owner_user_id === selectedResponsibleId);
         }
         
         return filtered;
-    }, [clients, selectedGerencia, selectedResponsibleId]);
+    }, [clients, selectedGerencia, selectedResponsibleId, isAdmin, currentUser]);
 
-    // Obtener responsables únicos filtrados por gerencia
+    // Obtener responsables únicos filtrados por permisos y gerencia
     const responsibleUsers = useMemo(() => {
         let filteredClients = clients;
         
-        // Si hay gerencia seleccionada, filtrar clientes por gerencia
+        // PRIMERO: Filtrar por permisos del usuario (si no es admin)
+        if (!isAdmin && currentUser?.assigned_clients) {
+            if (currentUser.assigned_clients.length > 0) {
+                filteredClients = filteredClients.filter(c => currentUser.assigned_clients!.includes(c.id));
+            } else {
+                filteredClients = [];
+            }
+        }
+        
+        // DESPUÉS: Si hay gerencia seleccionada, filtrar clientes por gerencia
         if (selectedGerencia && selectedGerencia !== 'all') {
             filteredClients = filteredClients.filter(c => c.gerencia === selectedGerencia);
         }
         
         const responsibleIds = new Set(filteredClients.map(c => c.owner_user_id));
         return users.filter(u => responsibleIds.has(u.id));
-    }, [clients, users, selectedGerencia]);
+    }, [clients, users, selectedGerencia, isAdmin, currentUser]);
 
     // Validar y resetear valores cuando cambian las dependencias
     useEffect(() => {
@@ -85,10 +107,22 @@ export const FilterBar: React.FC<FilterBarProps> = ({ activeView }) => {
         setSelectedGerencia(e.target.value);
     };
 
-    // Obtener gerencias únicas
+    // Obtener gerencias únicas de los clientes disponibles
     const gerencias = useMemo(() => {
-        return Object.values(Gerencia);
-    }, []);
+        // Filtrar clientes según permisos del usuario
+        let filteredClients = clients;
+        if (!isAdmin && currentUser?.assigned_clients) {
+            if (currentUser.assigned_clients.length > 0) {
+                filteredClients = filteredClients.filter(c => currentUser.assigned_clients!.includes(c.id));
+            } else {
+                filteredClients = [];
+            }
+        }
+        
+        // Obtener gerencias únicas de los clientes disponibles
+        const availableGerencias = new Set(filteredClients.map(c => c.gerencia));
+        return Object.values(Gerencia).filter(g => availableGerencias.has(g));
+    }, [clients, isAdmin, currentUser]);
 
     // Obtener valores seleccionados para mostrar en el botón
     const getSelectedValues = () => {

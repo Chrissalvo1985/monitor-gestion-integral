@@ -71,6 +71,7 @@ export interface User {
   role: 'admin' | 'user';
   active: boolean;
   created_at?: string;
+  assigned_clients?: string[]; // IDs de clientes asignados
 }
 
 export interface AuthUser {
@@ -78,6 +79,7 @@ export interface AuthUser {
   name: string;
   email: string;
   role: 'admin' | 'user';
+  assigned_clients?: string[]; // IDs de clientes asignados (vacío para admins = acceso total)
 }
 
 export interface Client {

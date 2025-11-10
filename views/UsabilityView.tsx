@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card } from '../components/Card';
+import { NoClientsAccess } from '../components/NoClientsAccess';
 import { useData } from '../hooks/useData';
 import { useAuth } from '../hooks/useAuth';
 import { ProgressBar } from '../components/ProgressBar';
@@ -11,9 +12,13 @@ import { usePagination } from '../hooks/usePagination';
 
 const UsabilityView: React.FC = () => {
     const { clients, techPlatforms, techUsability, selectedClientId, selectedResponsibleId, selectedGerencia } = useData();
-    const { isAdmin } = useAuth();
+    const { isAdmin, hasAssignedClients } = useAuth();
     const [isModalOpen, setModalOpen] = useState(false);
     const [editingContext, setEditingContext] = useState<{ clientId: string; platformId: string; } | null>(null);
+
+    if (!hasAssignedClients) {
+        return <NoClientsAccess />;
+    }
 
     const filteredClients = useMemo(() => {
         return filterClients(clients, selectedClientId, selectedResponsibleId, selectedGerencia);

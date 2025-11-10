@@ -1,12 +1,33 @@
 import express from 'express';
 import { query } from '../db.js';
+import { getUserContext, getClientFilterSQL } from '../utils/authUtils.js';
 
 const router = express.Router();
 
-// GET all lab events
+// GET all lab events (filtrado por permisos)
 router.get('/', async (req, res) => {
   try {
-    const result = await query('SELECT * FROM lab_events ORDER BY date DESC');
+    const userContext = await getUserContext(req);
+    const clientFilter = getClientFilterSQL(userContext, 'client_id');
+    
+    let sql = 'SELECT * FROM lab_events';
+    let params: any[] = [];
+    
+    if (clientFilter.sql) {
+      // Lab events pueden tener client_id NULL, así que lo manejamos diferente
+      if (clientFilter.sql.includes('IS NULL AND')) {
+        // Usuario sin clientes asignados - solo ver eventos sin cliente
+        sql += ' WHERE client_id IS NULL';
+      } else {
+        // Usuario con clientes asignados - ver eventos de sus clientes O sin cliente
+        sql += ` WHERE (${clientFilter.sql} OR client_id IS NULL)`;
+        params = clientFilter.params;
+      }
+    }
+    
+    sql += ' ORDER BY date DESC';
+    
+    const result = await query(sql, params);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching lab events:', error);

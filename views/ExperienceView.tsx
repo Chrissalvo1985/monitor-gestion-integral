@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card } from '../components/Card';
+import { NoClientsAccess } from '../components/NoClientsAccess';
 import { useData } from '../hooks/useData';
 import { useAuth } from '../hooks/useAuth';
 import { ClientExperience, CollaboratorExperiencePlan, ImplementationStatus } from '../types';
@@ -60,11 +61,15 @@ const NpsCard: React.FC<{ experience: ClientExperience | undefined; onEdit: () =
 
 const ExperienceView: React.FC = () => {
     const { selectedClientId, selectedResponsibleId, selectedGerencia, clients, clientExperiences, collaboratorExperiencePlans, processAreas, users, deleteCollaboratorExperiencePlan } = useData();
-    const { isAdmin } = useAuth();
+    const { isAdmin, hasAssignedClients } = useAuth();
 
     const [isNpsModalOpen, setNpsModalOpen] = useState(false);
     const [isPlanModalOpen, setPlanModalOpen] = useState(false);
     const [editingPlan, setEditingPlan] = useState<CollaboratorExperiencePlan | null>(null);
+
+    if (!hasAssignedClients) {
+        return <NoClientsAccess />;
+    }
 
     const filteredClients = useMemo(() => {
         return filterClients(clients, selectedClientId, selectedResponsibleId, selectedGerencia);
