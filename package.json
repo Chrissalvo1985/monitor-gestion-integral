@@ -12,6 +12,7 @@
     "seed": "tsx server/scripts/seed.ts",
     "migrate:user-clients": "tsx server/scripts/migrate_user_clients.ts",
     "migrate:target-date": "tsx server/scripts/migrate_add_target_date.ts",
+    "migrate:status-constraint": "tsx server/scripts/migrate_update_status_constraint.ts",
     "vercel-build": "npm run build"
   },
   "dependencies": {
