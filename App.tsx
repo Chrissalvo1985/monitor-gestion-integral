@@ -9,6 +9,7 @@ import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
 import { LoginView } from './components/LoginView';
 import { api } from './lib/api';
+import { isSpecificSystem } from './constants';
 
 import DashboardView from './views/DashboardView';
 import TechMonitorView from './views/TechMonitorView';
@@ -355,7 +356,18 @@ const AppContent: React.FC = () => {
     const client = clients.find(c => c.id === clientId);
     if (!client) return;
 
-    const usagePct = client.headcount > 0 ? Math.round((usageCount / client.headcount) * 100) : 0;
+    const platform = techPlatforms.find(p => p.id === platformId);
+    if (!platform) return;
+
+    // Para sistemas específicos (NSS, Panel Supervisores, SINEX, WF Selección):
+    // Si tiene usuarios (usage_count > 0) = 100% (OK), si no = 0% (No en uso)
+    // Para sistemas de toda la dotación: calcular porcentaje basado en headcount
+    let usagePct: number;
+    if (isSpecificSystem(platform.code)) {
+      usagePct = usageCount > 0 ? 100 : 0;
+    } else {
+      usagePct = client.headcount > 0 ? Math.round((usageCount / client.headcount) * 100) : 0;
+    }
     const finalUsagePct = Math.min(100, usagePct);
 
     try {
