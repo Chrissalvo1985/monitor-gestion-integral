@@ -74,14 +74,18 @@ const UsabilityView: React.FC = () => {
                                                         // Indicador simplificado para sistemas específicos
                                                         <div className="flex items-center justify-center space-x-1 sm:space-x-2">
                                                             <div className="flex-grow min-w-0 text-center">
-                                                                <div className="flex items-center justify-center space-x-1.5">
-                                                                    {usageCount > 0 && (
-                                                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                                                                    )}
-                                                                    <span className="text-sm font-semibold text-gray-800">
-                                                                        {usageCount.toLocaleString('es-CL')}
-                                                                    </span>
-                                                                </div>
+                                                                {usageCount > 0 ? (
+                                                                    <div className="flex items-center justify-center space-x-1.5">
+                                                                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                        </svg>
+                                                                        <span className="text-sm font-medium text-gray-800">
+                                                                            {usageCount.toLocaleString('es-CL')} {usageCount !== 1 ? 'usuarios' : 'usuario'}
+                                                                        </span>
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-sm text-gray-400">-</span>
+                                                                )}
                                                             </div>
                                                             {isAdmin && (
                                                                 <button onClick={() => handleOpenModal(client.id, platform.id)} className="text-blue-600 hover:text-blue-800 flex-shrink-0" title="Editar Usabilidad">
