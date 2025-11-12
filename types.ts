@@ -24,6 +24,7 @@ export enum ImplementationStatus {
 
 export enum ProcessSurveyStatus {
     NO_INICIADO = 'NO_INICIADO',
+    PLANIFICADO = 'PLANIFICADO',
     EN_LEVANTAMIENTO = 'EN_LEVANTAMIENTO',
     EN_VALIDACION = 'EN_VALIDACION',
     DOCUMENTADO = 'DOCUMENTADO',
@@ -153,6 +154,7 @@ export interface ProcessSurvey {
     evidencias_pct: number;
     owner_user_id: string;
     last_update: string;
+    target_date?: string;
     notes?: string;
     attachments_url?: string;
 }

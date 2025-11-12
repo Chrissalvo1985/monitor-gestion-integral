@@ -69,6 +69,9 @@ const ProcessMonitorView: React.FC = () => {
                                     </div>
                                     <div className="text-xs pt-1.5 border-t border-gray-200 space-y-0.5">
                                         <p><strong>Owner:</strong> {owner?.name || 'N/A'}</p>
+                                        {survey.target_date && (
+                                            <p><strong>Fecha Obj.:</strong> {new Date(survey.target_date).toLocaleDateString()}</p>
+                                        )}
                                         <p><strong>Última Act.:</strong> {new Date(survey.last_update).toLocaleDateString()}</p>
                                     </div>
                                     {isAdmin && (

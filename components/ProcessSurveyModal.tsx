@@ -30,7 +30,12 @@ export const ProcessSurveyModal: React.FC<ProcessSurveyModalProps> = ({ isOpen, 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (survey) {
-      updateProcessSurvey({ ...survey, ...formData, last_update: new Date().toISOString() });
+      // Limpiar target_date si está vacío
+      const cleanedFormData = {
+        ...formData,
+        target_date: formData.target_date && formData.target_date.trim() !== '' ? formData.target_date : undefined
+      };
+      updateProcessSurvey({ ...survey, ...cleanedFormData, last_update: new Date().toISOString() });
     }
     onClose();
   };
@@ -69,6 +74,21 @@ export const ProcessSurveyModal: React.FC<ProcessSurveyModalProps> = ({ isOpen, 
           >
             {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="target_date" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Fecha Objetivo</label>
+          <input 
+            type="date" 
+            name="target_date" 
+            id="target_date" 
+            value={formData.target_date ? formData.target_date.split('T')[0] : ''} 
+            onChange={(e) => setFormData(prev => ({ ...prev, target_date: e.target.value || undefined }))} 
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base" 
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Fecha objetivo para completar el levantamiento
+          </p>
         </div>
 
         <div className="border-t border-gray-200 pt-4">
